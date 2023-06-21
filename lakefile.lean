@@ -1,18 +1,10 @@
 import Lake
 open Lake DSL
 
-package «captureCalculus» {
-  -- add package configuration options here
-}
-
-lean_lib «CaptureCalculus» {
-  -- add library configuration options here
-}
+package captureCalculus
 
 @[default_target]
-lean_exe «captureCalculus» {
-  root := `Main
-}
+lean_lib FSub
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4"
