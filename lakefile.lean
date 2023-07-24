@@ -7,7 +7,7 @@ package captureCalculus
 lean_lib FSub
 
 @[default_target]
-lean_lib CC0
+lean_lib CC
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4"
