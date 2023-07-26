@@ -11,13 +11,13 @@ namespace CC
 
 mutual
 
-inductive Subtype : Ctx n m -> CType n m -> CType n m -> Type where
+inductive Subtype : Ctx n m -> CType n m -> CType n m -> Prop where
 | capt :
   Subcapt Γ C1 C2 ->
   SubtypeP Γ S1 S2 ->
   Subtype Γ (CType.capt C1 S1) (CType.capt C2 S2)
 
-inductive SubtypeP : Ctx n m -> PType n m -> PType n m -> Type where
+inductive SubtypeP : Ctx n m -> PType n m -> PType n m -> Prop where
 | refl :
   SubtypeP Γ S S
 | trans :

@@ -7,7 +7,7 @@ import CC.Type
 
 namespace CC
 
-inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Type where
+inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_trans :
   Subcapt Γ C1 C2 ->
   Subcapt Γ C2 C3 ->

@@ -15,7 +15,7 @@ inductive Ctx : Nat -> Nat -> Type where
   PType n m ->
   Ctx n m.succ
 
-inductive BoundVar : Ctx n m -> Fin n -> CType n m -> Type where
+inductive BoundVar : Ctx n m -> Fin n -> CType n m -> Prop where
 | here :
   BoundVar (Ctx.extend_var Γ T) 0 T.weaken_var
 | there_var :
@@ -25,7 +25,7 @@ inductive BoundVar : Ctx n m -> Fin n -> CType n m -> Type where
   BoundVar Γ x T ->
   BoundVar (Ctx.extend_tvar Γ S) x T.weaken_tvar
 
-inductive BoundTVar : Ctx n m -> Fin m -> PType n m -> Type where
+inductive BoundTVar : Ctx n m -> Fin m -> PType n m -> Prop where
 | here :
   BoundTVar (Ctx.extend_tvar Γ S) 0 S.weaken_tvar
 | there_var :
