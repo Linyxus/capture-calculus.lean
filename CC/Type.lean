@@ -46,6 +46,9 @@ def CType.weaken_var (T : CType n m) : CType n.succ m :=
 def CType.weaken_tvar (T : CType n m) : CType n m.succ :=
   T.rename id weaken_map
 
+def CType.open_var (T : CType n.succ m) (k : Fin n) : CType n m :=
+  T.rename (open_map k) id
+
 @[simp]
 theorem rename_capt :
   (CType.capt C S).rename f g = CType.capt (C.rename f) (S.rename f g) :=
@@ -124,3 +127,14 @@ theorem CType.rename_comp
   (T.rename f1 g1).rename f2 g2 = T.rename (f2.comp f1) (g2.comp g1)
 | CType.capt C R => by
   simp [CaptureSet.rename_comp, PType.rename_comp]
+
+def PType.open_tvar_rec (S : PType n m) (R : PType n m) (k : Fin m) : PType n m :=
+  match S with
+  | PType.tvar x => if x = k then R else S
+  | PType.top => PType.top
+  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) =>
+    PType.arr (CType.capt C1 (S1.open_tvar_rec R k)) (CType.capt C2 (S2.open_tvar_rec R.weaken_var k))
+  | PType.tarr S1 (CType.capt C2 S2) =>
+    PType.tarr (S1.open_tvar_rec R k) (CType.capt C2 (S2.open_tvar_rec R.weaken_tvar k.succ))
+  | PType.boxed (CType.capt C S) =>
+    PType.boxed (CType.capt C (S.open_tvar_rec R k))
