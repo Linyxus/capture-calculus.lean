@@ -16,6 +16,9 @@ instance : Singleton (Fin n) (CaptureSet n) :=
 instance : Union (CaptureSet n) :=
   ⟨fun s t => ⟨s.1 ∪ t.1⟩⟩ 
 
+instance : EmptyCollection (CaptureSet n) :=
+  ⟨⟨{}⟩⟩
+
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
   ⟨C.elems.image f⟩
   
