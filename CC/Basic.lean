@@ -49,3 +49,21 @@ theorem id_comp (f : VarMap n1 n2) :
 @[simp]
 theorem ext_comp_weaken (f : VarMap n1 n2) :
   f.ext.comp weaken_map = weaken_map.comp f := by aesop
+
+theorem comp_open (f : VarMap n1 n2) (x : Fin n1) :
+  f.comp (open_map x) = (open_map (f x)).comp f.ext := by
+  simp [VarMap.comp]
+  funext z
+  cases z using Fin.cases with
+  | H0 =>
+    conv =>
+      lhs
+      simp [open_map]
+  | Hs z0 =>
+    conv =>
+      lhs
+      simp [open_map]
+
+@[simp]
+theorem ext_zero (f : VarMap n1 n2) :
+  f.ext 0 = 0 := by simp [VarMap.ext]

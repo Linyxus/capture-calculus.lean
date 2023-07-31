@@ -33,6 +33,23 @@ inductive Value : Term n m -> Prop where
 | tabs : Value (Term.tabs S t)
 | box : Value (Term.box x)
 
+def Value.rename {t : Term n1 m1} (v : Value t) 
+  (f : VarMap n1 n2) (g : VarMap m1 m2) :
+  Value (t.rename f g) := by
+  cases v <;> (simp [Term.rename]; constructor)
+
+def Term.weaken_var (t : Term n m) : Term n.succ m :=
+  t.rename weaken_map id
+
+def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
+  t.rename id weaken_map
+
+def Term.open_var (t : Term n.succ m) (x : Fin n) : Term n m :=
+  t.rename (open_map x) id
+
+def Term.open_tvar (t : Term n m.succ) (X : Fin m) : Term n m :=
+  t.rename id (open_map X)
+
 -- def Term.cv' (k : Nat) (t : Term (n + k) m) : Finset (Fin n) :=
 --   match t with
 --   | Term.var x => if k <= x then {sorry} else {}
