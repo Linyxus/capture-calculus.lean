@@ -7,6 +7,7 @@ import CC.TypeMap
 import CC.Typed
 import CC.Subcapt
 import CC.Subcapt.Basic
+import CC.Subtype.Basic
 
 namespace CC
 
@@ -38,3 +39,39 @@ theorem Typed.var_inv_subcapt :
   Typed Γ (Term.var x) Cx (CType.capt C S) ->
   Subcapt Γ {x} C := by
   apply Typed.var_inv_subcapt' <;> aesop
+
+theorem Typed.app_inv' :
+  t0 = Term.app x y ->
+  Typed Γ t0 C0 U ->
+  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+    Typed Γ (Term.var y) Cy T ∧
+    Subtype Γ (U0.open_var y) U := by
+  intro heq h
+  induction h <;> try (solve | cases heq)
+  case app h1 h2 ih1 ih2 =>
+    cases heq
+    repeat (apply Exists.intro)
+    apply And.intro
+    exact h1
+    apply And.intro
+    exact h2
+    apply Subtype.refl
+  case sub h hsub ih =>
+    have ih' := ih heq
+    let ⟨Cx0, Cy0, Cf0, T0, U0, hx, hy, heq0⟩ := ih'
+    clear ih
+    subst_vars
+    repeat apply Exists.intro
+    apply And.intro
+    exact hx
+    apply And.intro
+    exact hy
+    apply Subtype.trans <;> aesop
+
+theorem Typed.app_inv :
+  Typed Γ (Term.app x y) C0 U ->
+  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+    Typed Γ (Term.var y) Cy T ∧
+    Subtype Γ (U0.open_var y) U := by
+  apply Typed.app_inv'
+  rfl
