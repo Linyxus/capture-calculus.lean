@@ -33,6 +33,10 @@ inductive Value : Term n m -> Prop where
 | tabs : Value (Term.tabs S t)
 | box : Value (Term.box x)
 
+structure Val (n m : Nat) where
+  t : Term n m
+  isVal : Value t
+
 def Value.rename {t : Term n1 m1} (v : Value t) 
   (f : VarMap n1 n2) (g : VarMap m1 m2) :
   Value (t.rename f g) := by
@@ -46,3 +50,9 @@ def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
 
 def Term.open_var (t : Term n.succ m) (x : Fin n) : Term n m :=
   t.rename (open_map x) id
+
+def Value.weaken_var {t : Term n m} (v : Value t) : Value (Term.weaken_var t) :=
+  v.rename weaken_map id
+
+def Val.weaken_var (v : Val n m) : Val n.succ m :=
+  { t := v.t.weaken_var, isVal := v.isVal.weaken_var }
