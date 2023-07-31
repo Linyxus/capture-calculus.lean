@@ -35,3 +35,9 @@ inductive Reduce : State n -> State n' -> Prop where
 | red_ctx :
   Reduce ⟨γ, t⟩ ⟨γ, t'⟩ ->
   Reduce ⟨γ, Term.letval t u⟩ ⟨γ, Term.letval t' u⟩
+
+inductive TypedState : State n -> CType n 0 -> Prop where
+| state :
+  TypedStore γ Γ ->
+  Typed Γ t C T ->
+  TypedState ⟨γ, t⟩ T
