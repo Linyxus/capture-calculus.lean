@@ -75,3 +75,32 @@ theorem Typed.app_inv :
     Subtype Γ (U0.open_var y) U := by
   apply Typed.app_inv'
   rfl
+
+theorem Typed.var_typing_bound' :
+  t0 = Term.var x ->
+  T0 = CType.capt C S ->
+  Typed Γ t0 Cx T0 ->
+  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by
+  intro he1 he2 h
+  induction h <;> try (solve | cases he1 | cases he2)
+  case var hb =>
+    cases he1; cases he2
+    repeat (apply Exists.intro)
+    apply And.intro
+    exact hb
+    apply SubtypeP.refl
+  case sub T _ h hsub ih =>
+    cases he1; cases he2
+    cases T
+    have ih := ih rfl rfl
+    let ⟨C', S, hb, hsub0⟩ := ih
+    repeat (apply Exists.intro)
+    apply And.intro
+    exact hb
+    cases hsub
+    apply SubtypeP.trans <;> trivial
+
+theorem Typed.var_typing_bound :
+  Typed Γ (Term.var x) Cx (CType.capt C S) ->
+  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by 
+  apply Typed.var_typing_bound' <;> aesop
