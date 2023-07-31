@@ -46,17 +46,3 @@ def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
 
 def Term.open_var (t : Term n.succ m) (x : Fin n) : Term n m :=
   t.rename (open_map x) id
-
-def Term.open_tvar (t : Term n m.succ) (X : Fin m) : Term n m :=
-  t.rename id (open_map X)
-
--- def Term.cv' (k : Nat) (t : Term (n + k) m) : Finset (Fin n) :=
---   match t with
---   | Term.var x => if k <= x then {sorry} else {}
---   | Term.abs T t => t.cv' k.succ
---   | Term.app x y => sorry
---   | Term.tabs S t => sorry
---   | Term.tapp x S => sorry
---   | Term.box x => sorry
---   | Term.unbox C x => sorry
---   | Term.letval t u => sorry
