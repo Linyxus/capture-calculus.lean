@@ -48,7 +48,7 @@ theorem Typed.app_inv' :
     Subtype Γ (U0.open_var y) U := by
   intro heq h
   induction h <;> try (solve | cases heq)
-  case app h1 h2 ih1 ih2 =>
+  case app h1 h2 _ _ =>
     cases heq
     repeat (apply Exists.intro)
     apply And.intro

@@ -116,3 +116,11 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     subst_vars
     simp [CType.rename_weaken_comm]
     apply DropBinderFree.rename; trivial
+
+def Typed.narrow_var
+  (hsub : Subtype Γ T1 T2)
+  (h0 : Typed (Ctx.extend_var Γ T2) t Ct T) :
+  Typed (Ctx.extend_var Γ T1) t Ct T := by
+  have h := Typed.subst h0 (VarSubst.narrowing_var hsub) TVarRename.narrowing_var
+  rw [<- Term.rename_id (t := t), <- CaptureSet.rename_id (C := Ct), <- CType.rename_id (T := T)]
+  assumption

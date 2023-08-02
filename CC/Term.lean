@@ -56,3 +56,6 @@ def Value.weaken_var {t : Term n m} (v : Value t) : Value (Term.weaken_var t) :=
 
 def Val.weaken_var (v : Val n m) : Val n.succ m :=
   { t := v.t.weaken_var, isVal := v.isVal.weaken_var }
+
+def Term.rename_id (t : Term n m) : t.rename id id = t := by
+  induction t <;> try (solve | simp [rename] | simp [rename]; aesop)
