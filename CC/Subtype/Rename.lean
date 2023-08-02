@@ -79,3 +79,7 @@ def Subtype.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : CType n1 m1}
   apply Subtype.capt
   apply Subcapt.rename <;> aesop
   apply SubtypeP.rename <;> aesop
+
+def Subtype.weaken_var (h : Subtype Γ T1 T2) P :
+  Subtype (Ctx.extend_var Γ P) T1.weaken_var T2.weaken_var :=
+  h.rename (VarRename.weaken_var_map Γ P) (TVarRename.weaken_var_map Γ P)

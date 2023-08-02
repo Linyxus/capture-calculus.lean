@@ -14,26 +14,6 @@ import CC.EvalContext
 
 namespace CC
 
-def BoundVar.pred'
-  {Γ : Ctx n m} {P : CType n m} {T : CType n.succ m} :
-  Γ0 = Ctx.extend_var Γ P ->
-  x0 = x.succ ->
-  BoundVar Γ0 x0 T ->
-  ∃ T0, T = T0.weaken_var ∧ BoundVar Γ x T0 := by
-  intro he1 he2 h
-  cases h <;> try (solve | cases he1 | cases he2)
-  cases he1
-  simp [Fin.succ_inj] at he2
-  subst_vars
-  aesop
-
-def BoundVar.pred
-  {Γ : Ctx n m} {P : CType n m} {T : CType n.succ m} :
-  BoundVar (Ctx.extend_var Γ P) x.succ T ->
-  ∃ T0, T = T0.weaken_var ∧ BoundVar Γ x T0 := by
-  intro h
-  apply BoundVar.pred' <;> aesop
-
 theorem lookup_store_typing
   (hs : TypedStore γ Γ)
   (hx : BoundVar Γ x T)

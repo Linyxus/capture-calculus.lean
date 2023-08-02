@@ -12,6 +12,7 @@ import CC.Subcapt.Basic
 import CC.Subcapt.Rename
 import CC.Subtype
 import CC.Subtype.Basic
+import CC.Subtype.Subst
 
 namespace CC
 
@@ -92,9 +93,46 @@ lemma SubtypeP.fun_inv' :
       let ⟨T', U', he, ih1, ih2⟩ := ih
       subst_vars
       have ih' := ih1 _ _ rfl h1
-      sorry
+      cases ih'
+      case inl => aesop
+      case inr =>
+        rename_i ih
+        let ⟨T'', U'', he', ih1', ih2'⟩ := ih
+        subst_vars
+        apply Or.inr
+        repeat apply Exists.intro
+        constructor
+        rfl
+        constructor
+        apply Subtype.trans <;> trivial
+        apply Subtype.trans
+        apply Subtype.narrow_var
+        assumption
+        assumption
+        assumption
+  case tvar =>
+    intros
+    unfold fun_inv_motive at *
+    intros T U he h
+    subst_vars
+    apply Or.inl
+    apply Exists.intro
+    rfl
+  case arr =>
+    intros
+    unfold fun_inv_motive at *
+    intros T U he h
+    subst_vars
+    apply Or.inr
+    repeat apply Exists.intro
+    constructor
+    rfl
+    cases he
+    constructor <;> trivial
 
 theorem SubtypeP.fun_inv :
   SubtypeP Γ P (PType.arr T U) ->
-  (∃ X,  P = X) ∨ 
-  (∃ T' U', P = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U) := sorry
+  (∃ X, P = PType.tvar X) ∨ 
+  (∃ T' U', P = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U) := by
+  intros
+  apply SubtypeP.fun_inv' <;> aesop
