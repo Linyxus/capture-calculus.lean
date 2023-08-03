@@ -104,3 +104,14 @@ theorem Typed.var_typing_bound :
   Typed Γ (Term.var x) Cx (CType.capt C S) ->
   ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by 
   apply Typed.var_typing_bound' <;> aesop
+
+theorem Typed.var_typing_captures'
+  (he : t0 = Term.var x)
+  (h : Typed Γ t0 Cx T) :
+  Cx = {x} := by
+  induction h <;> try (solve | cases he | aesop)
+
+theorem Typed.var_typing_captures
+  (h : Typed Γ (Term.var x) Cx T) :
+  Cx = {x} := by
+  apply Typed.var_typing_captures' <;> trivial

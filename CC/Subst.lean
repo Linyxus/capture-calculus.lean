@@ -73,3 +73,30 @@ def VarSubst.ext_tvar (σ : VarSubst Γ Δ f) R :
     have h' := σ h
     have h'' := h'.weaken_tvar (R.rename f id)
     exact h''
+
+def VarSubst.open_var {Γ : Ctx n m} {y : Fin n} (h : Typed Γ (Term.var y) {y} P) :
+  VarSubst (Ctx.extend_var Γ P) Γ (open_map y) := by
+  unfold VarSubst
+  intros x T hb
+  cases hb
+  case here =>
+    simp
+    unfold CType.weaken_var
+    simp [CType.rename_comp]
+    trivial
+  case there_var =>
+    simp
+    unfold CType.weaken_var
+    simp [CType.rename_comp]
+    apply Typed.var_bound_type; aesop
+
+def TVarRename.open_var (h : Typed Γ (Term.var y) {y} P) :
+  TVarRename (Ctx.extend_var Γ P) Γ (open_map y) id := by
+  unfold TVarRename
+  intros X S h
+  cases h
+  rename_i hb
+  simp
+  unfold PType.weaken_var
+  simp [PType.rename_comp]
+  trivial

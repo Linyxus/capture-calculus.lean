@@ -124,3 +124,11 @@ def Typed.narrow_var
   have h := Typed.subst h0 (VarSubst.narrowing_var hsub) TVarRename.narrowing_var
   rw [<- Term.rename_id (t := t), <- CaptureSet.rename_id (C := Ct), <- CType.rename_id (T := T)]
   assumption
+
+def Typed.open_var
+  (hz : Typed Γ (Term.var z) {z} P)
+  (h0 : Typed (Ctx.extend_var Γ P) t C T) :
+  Typed Γ (t.open_var z) (C.open_var z) (T.open_var z) := by
+  apply Typed.subst <;> try trivial
+  apply VarSubst.open_var; trivial
+  apply TVarRename.open_var; trivial

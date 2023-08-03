@@ -21,6 +21,14 @@ def open_map (k : Fin n) : VarMap n.succ n := by
   | Hs i0 => exact i0
 
 @[simp]
+theorem open_map_zero (k : Fin n) :
+  open_map k 0 = k := by aesop
+
+@[simp]
+theorem open_map_succ :
+  open_map k x.succ = x := by aesop
+
+@[simp]
 theorem id_ext : VarMap.ext (n := n) id = id := by
   unfold VarMap
   ext x
@@ -49,6 +57,12 @@ theorem id_comp (f : VarMap n1 n2) :
 @[simp]
 theorem ext_comp_weaken (f : VarMap n1 n2) :
   f.ext.comp weaken_map = weaken_map.comp f := by aesop
+
+@[simp]
+theorem open_comp_weaken :
+  (open_map k).comp weaken_map = id := by
+  funext x
+  simp [VarMap.comp, weaken_map, open_map]
 
 theorem comp_open (f : VarMap n1 n2) (x : Fin n1) :
   f.comp (open_map x) = (open_map (f x)).comp f.ext := by

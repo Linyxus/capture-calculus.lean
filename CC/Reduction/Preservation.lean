@@ -11,6 +11,8 @@ import CC.Term
 import CC.Term.TypeSubst
 import CC.Type
 import CC.Reduction
+import CC.StoreContext.Lookup
+import CC.Typed.Basic
 
 namespace CC
 
@@ -28,4 +30,22 @@ theorem preservation :
   induction hr
   case red_app hl =>
     cases ht; rename_i hs hv
-    sorry
+    have h1 := Typed.app_inv hv
+    let ⟨Cx, Cy, Cf, T, U0, hx, hy, hsub⟩ := h1
+    have h2 := lookup_fun hs hx hl
+    let ⟨C2, ht⟩ := h2
+    have h3 := Typed.var_typing_captures hy
+    subst_vars
+    have h4 := Typed.open_var hy ht
+    apply Exists.intro T1
+    constructor
+    constructor; trivial
+    apply Typed.sub
+    exact h4
+    trivial
+    constructor
+  case red_tapp => sorry
+  case red_open => sorry
+  case red_rename => sorry
+  case red_liftval => sorry
+  case red_ctx => sorry

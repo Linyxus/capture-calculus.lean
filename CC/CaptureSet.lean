@@ -75,4 +75,7 @@ theorem CaptureSet.rename_comp {C : CaptureSet n1} {f1 : VarMap n1 n2} {f2 : Var
 theorem CaptureSet.rename_union {C1 C2 : CaptureSet n} :
   (C1 ∪ C2).rename f = C1.rename f ∪ C2.rename f := by
   simp [CaptureSet.rename, union_def, Finset.image_union]
+
+def CaptureSet.open_var (C : CaptureSet n.succ) (z : Fin n) : CaptureSet n :=
+  C.rename (open_map z)
   
