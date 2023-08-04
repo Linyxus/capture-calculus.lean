@@ -91,3 +91,16 @@ theorem tvar_open_map_rename_comm
       simp [TypeMap.compv, VarMap.ext]
       simp [tvar_open_map]
     simp [PType.rename]
+
+lemma TypeMap.ext_var_then (g : TypeMap n m1 m2) :
+  g.ext_var = g.then weaken_map id := by
+  funext x
+  cases m1 with
+  | zero => aesop
+  | succ _ => 
+    cases x using Fin.cases <;> simp [ext_var, TypeMap.then, PType.weaken_var]
+
+lemma TypeMap.weaken_ext_comm (g : TypeMap n m1 m2) :
+  g.ext_tvar.compv weaken_map = g.then id weaken_map := by
+  funext x
+  simp [weaken_map, ext_tvar, compv, TypeMap.then, PType.weaken_tvar]

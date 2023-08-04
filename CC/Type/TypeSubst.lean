@@ -94,3 +94,50 @@ theorem CType.rename_open_tvar_comm (T : CType n1 m1.succ)
   simp [CType.rename_tsubst]
   rw [tvar_open_map_rename_comm]
   rw [<- CType.tsubst_rename]
+
+@[simp]
+lemma tsubst_arr :
+  (PType.arr T U).tsubst f = PType.arr (T.tsubst f) (U.tsubst f.ext_var) := by
+  cases T; cases U
+  simp [PType.tsubst]
+  simp [CType.tsubst]
+
+@[simp]
+lemma tsubst_tarr :
+  (PType.tarr T U).tsubst f = PType.tarr (T.tsubst f) (U.tsubst f.ext_tvar) := by
+  cases U
+  simp [PType.tsubst]
+  simp [CType.tsubst]
+
+@[simp] 
+lemma tsubst_boxed :
+  (PType.boxed T).tsubst f = PType.boxed (T.tsubst f) := by
+  cases T
+  simp [PType.tsubst]
+  simp [CType.tsubst]
+
+lemma CType.tsubst_weaken_var_comm (T : CType n m) :
+  T.weaken_var.tsubst g.ext_var = (T.tsubst g).weaken_var := by
+  rw [TypeMap.ext_var_then]
+  unfold CType.weaken_var
+  rw [<- CType.rename_tsubst]
+
+lemma PType.tsubst_weaken_var_comm (T : PType n m) :
+  T.weaken_var.tsubst g.ext_var = (T.tsubst g).weaken_var := by
+  rw [TypeMap.ext_var_then]
+  unfold PType.weaken_var
+  rw [<- PType.rename_tsubst]
+
+lemma CType.tsubst_weaken_tvar_comm (S : CType n m) :
+  S.weaken_tvar.tsubst g.ext_tvar = (S.tsubst g).weaken_tvar := by
+  unfold CType.weaken_tvar
+  rw [CType.tsubst_rename]
+  rw [TypeMap.weaken_ext_comm]
+  rw [<- CType.rename_tsubst]
+
+lemma PType.tsubst_weaken_tvar_comm (S : PType n m) :
+  S.weaken_tvar.tsubst g.ext_tvar = (S.tsubst g).weaken_tvar := by
+  unfold PType.weaken_tvar
+  rw [PType.tsubst_rename]
+  rw [TypeMap.weaken_ext_comm]
+  rw [<- PType.rename_tsubst]
