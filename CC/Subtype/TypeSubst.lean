@@ -82,14 +82,14 @@ def SubtypeP.tsubst'
     apply SubtypeP.boxed
     apply ih <;> trivial
 
-def SubtypeP.subst
+def SubtypeP.tsubst
   (h : SubtypeP Γ S1 S2)
   (σ : VarTypeMap Γ Δ g)
   (δ : TVarSubst Γ Δ g) :
   SubtypeP Δ (S1.tsubst g) (S2.tsubst g) := by
   apply SubtypeP.tsubst' <;> aesop
 
-def Subtype.subst
+def Subtype.tsubst
   (h : Subtype Γ T1 T2)
   (σ : VarTypeMap Γ Δ g)
   (δ : TVarSubst Γ Δ g) :
@@ -97,4 +97,4 @@ def Subtype.subst
   cases h
   constructor
   apply Subcapt.tsubst <;> trivial
-  apply SubtypeP.subst <;> trivial
+  apply SubtypeP.tsubst <;> trivial

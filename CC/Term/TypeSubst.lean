@@ -19,3 +19,7 @@ def Term.tsubst (t : Term n m1) (σ : TypeMap n m1 m2) : Term n m2 :=
 
 def Term.open_tvar (t : Term n m.succ) (R : PType n m) : Term n m :=
   t.tsubst (tvar_open_map R)
+
+lemma Value.tsubst (v : Value t) :
+  Value (t.tsubst g) := by
+  cases v <;> constructor

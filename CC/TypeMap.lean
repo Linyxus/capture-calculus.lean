@@ -24,6 +24,9 @@ def TypeMap.then (σ : TypeMap n1 m1 m2) (f : VarMap n1 n2) (g : VarMap m2 m3) :
 def TypeMap.compv (σ : TypeMap n m2 m3) (g : VarMap m1 m2) :
   TypeMap n m1 m3 := fun x => σ (g x)
 
+def TypeMap.map (σ : TypeMap n m1 m2) (f : PType n m2 -> PType n m3) : TypeMap n m1 m3 :=
+  fun x => f (σ x)
+
 def tvar_open_map (R : PType n m) : TypeMap n m.succ m := by
   intro x
   cases x using Fin.cases with
@@ -100,7 +103,35 @@ lemma TypeMap.ext_var_then (g : TypeMap n m1 m2) :
   | succ _ => 
     cases x using Fin.cases <;> simp [ext_var, TypeMap.then, PType.weaken_var]
 
+lemma TypeMap.ext_var_def (g : TypeMap n m1 m2) :
+  g.ext_var = fun x => (g x).weaken_var := by
+  rw [TypeMap.ext_var_then]
+  simp [TypeMap.then, PType.weaken_var]
+
 lemma TypeMap.weaken_ext_comm (g : TypeMap n m1 m2) :
   g.ext_tvar.compv weaken_map = g.then id weaken_map := by
   funext x
   simp [weaken_map, ext_tvar, compv, TypeMap.then, PType.weaken_tvar]
+
+lemma TypeMap.ext_var_open (g : TypeMap n m1 m2) :
+  g.ext_var.then (open_map k) id = g := by
+  funext x
+  simp [ext_var, TypeMap.then]
+  unfold PType.weaken_var
+  simp [PType.rename_comp]
+
+def TypeMap.id {n m : Nat} : TypeMap n m m := fun X => PType.tvar X
+
+@[simp]
+lemma TypeMap.id_ext_var {n m} : (TypeMap.id (n := n) (m := m)).ext_var = TypeMap.id := by
+  funext X
+  cases m with
+  | zero => cases X.isLt
+  | succ => simp [ext_var, id, PType.weaken_var, PType.rename]
+
+@[simp]
+lemma TypeMap.id_ext_tvar {n m} : (TypeMap.id (n := n) (m := m)).ext_tvar = TypeMap.id := by
+  funext X
+  cases X using Fin.cases with
+  | H0 => simp [ext_tvar, id, PType.weaken_tvar, PType.rename]
+  | Hs X0 => simp [ext_tvar, id, PType.weaken_tvar, PType.rename, weaken_map]

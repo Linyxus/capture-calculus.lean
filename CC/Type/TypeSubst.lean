@@ -116,6 +116,10 @@ lemma tsubst_boxed :
   simp [PType.tsubst]
   simp [CType.tsubst]
 
+@[simp]
+lemma tsubst_capt :
+  (CType.capt C S).tsubst g = CType.capt C (S.tsubst g) := by aesop
+
 lemma CType.tsubst_weaken_var_comm (T : CType n m) :
   T.weaken_var.tsubst g.ext_var = (T.tsubst g).weaken_var := by
   rw [TypeMap.ext_var_then]
@@ -141,3 +145,123 @@ lemma PType.tsubst_weaken_tvar_comm (S : PType n m) :
   rw [PType.tsubst_rename]
   rw [TypeMap.weaken_ext_comm]
   rw [<- PType.rename_tsubst]
+
+lemma CType.tsubst_open_var_comm {n m : Nat} (T : CType n.succ m1) {y : Fin n} {g : TypeMap n m1 m2} :
+  (T.open_var y).tsubst g = (T.tsubst g.ext_var).open_var y := by
+  unfold CType.open_var
+  rw [rename_tsubst]
+  rw [TypeMap.ext_var_open]
+
+lemma TypeMap.ext_var_comp (g2 : TypeMap n m2 m3) (g1 : TypeMap n m1 m2) :
+  (g1.map (fun P => P.tsubst g2)).ext_var = g1.ext_var.map (fun P => P.tsubst g2.ext_var) := by
+  funext x
+  cases m1 with
+  | zero => cases x.isLt
+  | succ m1 =>
+    simp [ext_var, TypeMap.map]
+    rw [<- ext_var_def]
+    simp [PType.tsubst_weaken_var_comm]
+
+lemma PType.tsubst_id (P : PType n m1) :
+  P.tsubst TypeMap.id = P :=
+  match P with
+  | PType.tvar X => by simp [tsubst, TypeMap.id]
+  | PType.top => by simp [tsubst]
+  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+    have ih1 := PType.tsubst_id S1
+    have ih2 := PType.tsubst_id S2
+    simp [tsubst, ih1, ih2]
+  | PType.tarr S1 (CType.capt C2 S2) => by
+    have ih1 := PType.tsubst_id S1
+    have ih2 := PType.tsubst_id S2
+    simp [tsubst, ih1, ih2]
+  | PType.boxed (CType.capt C S) => by
+    have ih := PType.tsubst_id S
+    simp [tsubst, ih]
+
+lemma TypeMap.open_tvar_comp_weaken_tvar :
+  (tvar_open_map R).compv weaken_map = TypeMap.id := by
+  funext X
+  simp [compv, weaken_map, tvar_open_map, TypeMap.id]
+
+lemma PType.open_tvar_weaken_tvar_id (P : PType n m) :
+  P.weaken_tvar.open_tvar R = P := by
+  simp [open_tvar, weaken_tvar]
+  simp [tsubst_rename]
+  rw [TypeMap.open_tvar_comp_weaken_tvar]
+  simp [PType.tsubst_id]
+
+lemma TypeMap.ext_tvar_comp (g1 : TypeMap n m1 m2) (g2 : TypeMap n m2 m3) :
+  (g1.map (fun P => P.tsubst g2)).ext_tvar = g1.ext_tvar.map (fun P => P.tsubst g2.ext_tvar) := by
+  funext X
+  cases X using Fin.cases with
+  | H0 =>
+    conv =>
+      lhs
+      simp [ext_tvar]
+  | Hs x0 => 
+    conv =>
+      lhs
+      simp [ext_tvar]
+    simp [map]
+    conv =>
+      rhs
+      arg 1
+      simp [ext_tvar]
+    simp [PType.tsubst_weaken_tvar_comm]
+
+lemma PType.tsubst_comp (T : PType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n m2 m3) :
+  (T.tsubst g1).tsubst g2 = T.tsubst (g1.map (fun P => P.tsubst g2)) :=
+  match T with
+  | PType.tvar X => by simp [tsubst, TypeMap.map]
+  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+    have ih1 := PType.tsubst_comp S1 g1 g2
+    have ih2 := PType.tsubst_comp S2 g1.ext_var g2.ext_var
+    simp [tsubst, ih1]
+    simp [TypeMap.ext_var_comp]
+    simp [ih2]
+  | PType.tarr S1 (CType.capt C2 S2) => by
+    have ih1 := PType.tsubst_comp S1 g1 g2
+    have ih2 := PType.tsubst_comp S2 g1.ext_tvar g2.ext_tvar
+    simp [tsubst, ih1]
+    simp [TypeMap.ext_tvar_comp]
+    simp [ih2]
+  | PType.top => by
+    simp [tsubst, TypeMap.map]
+  | PType.boxed (CType.capt C1 S1) => by
+    have ih := PType.tsubst_comp S1 g1 g2
+    simp [tsubst, ih]
+
+lemma CType.tsubst_comp (T : CType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n m2 m3) :
+  (T.tsubst g1).tsubst g2 = T.tsubst (g1.map (fun P => P.tsubst g2)) := by
+  cases T
+  simp [tsubst]
+  simp [PType.tsubst_comp]
+
+lemma PType.open_tvar_def {n m : Nat} (S : PType n m.succ) {R} :
+  S.open_tvar R = S.tsubst (tvar_open_map R) := rfl
+
+lemma TypeMap.tsubst_open_tvar_map_comm (S : PType n m1) (g : TypeMap n m1 m2) :
+  (tvar_open_map S).map (fun P => P.tsubst g) = g.ext_tvar.map (fun P => P.tsubst (tvar_open_map (S.tsubst g))) := by
+  funext X
+  simp [map]
+  cases X using Fin.cases with
+  | H0 =>
+    simp [ext_tvar]
+    conv =>
+      lhs
+      simp [tvar_open_map]
+  | Hs X0 =>
+    simp [ext_tvar]
+    conv =>
+      lhs
+      simp [tvar_open_map]
+      simp [PType.tsubst]
+    rw [<- PType.open_tvar_def]
+    simp [PType.open_tvar_weaken_tvar_id]
+
+lemma CType.tsubst_open_tvar_comm (T : CType n m1.succ) (S : PType n m1) (g : TypeMap n m1 m2) :
+  (T.open_tvar S).tsubst g = (T.tsubst g.ext_tvar).open_tvar (S.tsubst g) := by
+  unfold open_tvar
+  simp [CType.tsubst_comp]
+  simp [TypeMap.tsubst_open_tvar_map_comm]
