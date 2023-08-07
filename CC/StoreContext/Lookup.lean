@@ -33,3 +33,20 @@ theorem lookup_fun
   constructor
   apply Subcapt.refl
   exact hsub
+
+theorem lookup_tfun
+  (hs : TypedStore γ Γ)
+  (hx : Typed Γ (Term.var x) Cx (CType.capt Cf (PType.tarr T U)))
+  (hl : LookupStore γ x ⟨Term.tabs T' t, hval⟩) :
+  ∃ C0, Typed (Ctx.extend_tvar Γ T) t C0 U := by
+  have h1 := Typed.var_typing_bound hx
+  let ⟨C1, S1, hb, hsub⟩ := h1
+  have h2 := lookup_store_typing hs hb hl
+  let ⟨C2, ht⟩ := h2
+  simp at ht
+  apply Typed.cf_tfun
+  apply Typed.sub
+  exact ht
+  constructor
+  apply Subcapt.refl
+  exact hsub

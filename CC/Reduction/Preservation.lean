@@ -13,6 +13,7 @@ import CC.Type
 import CC.Reduction
 import CC.StoreContext.Lookup
 import CC.Typed.Basic
+import CC.Typed.Opening
 
 namespace CC
 
@@ -44,7 +45,20 @@ theorem preservation :
     exact h4
     trivial
     constructor
-  case red_tapp => sorry
+  case red_tapp hl =>
+    cases ht; rename_i hs hv
+    have h1 := Typed.tapp_inv hv
+    let ⟨Cx, Cf, U0, hx, hsub⟩ := h1
+    have h2 := lookup_tfun hs hx hl
+    let ⟨C2, ht⟩ := h2
+    have h3 := Typed.open_tvar SubtypeP.refl ht
+    apply Exists.intro T1
+    constructor
+    constructor; trivial
+    apply Typed.sub
+    exact h3
+    trivial
+    constructor
   case red_open => sorry
   case red_rename => sorry
   case red_liftval => sorry

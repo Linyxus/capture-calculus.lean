@@ -86,3 +86,37 @@ theorem Typed.cf_tfun :
   ∃ C', Typed (Ctx.extend_tvar Γ T) t C' U := by
   intro h
   apply Typed.cf_tfun' <;> trivial
+
+theorem Typed.cf_box' :
+  t0 = Term.box y ->
+  T0 = CType.capt C (PType.boxed T) ->
+  Typed Γ t0 Ct T0 ->
+  ∃ C', Typed Γ (Term.var y) C' T := by
+  intro he1 he2 h
+  induction h <;> try (solve | cases he1 | cases he2)
+  case box h ih =>
+    cases he1; cases he2
+    aesop
+  case sub h hsub ih =>
+    cases he1; cases he2
+    cases hsub; rename_i hc hs
+    have h1 := SubtypeP.boxed_inv hs
+    cases h1
+    case inl h1 =>
+      cases h1; subst_vars
+      exfalso
+      apply Typed.value_typing <;> (solve | constructor | trivial)
+    case inr h1 =>
+      let ⟨T', he, hs⟩ := h1
+      clear h1
+      subst_vars
+      have ih' := ih rfl rfl
+      cases ih'; rename_i C0 ih
+      constructor
+      apply Typed.sub <;> trivial
+
+theorem Typed.cf_box :
+  Typed Γ (Term.box y) Ct (CType.capt C (PType.boxed T)) ->
+  ∃ C', Typed Γ (Term.var y) C' T := by
+  intro h
+  apply Typed.cf_box' <;> trivial

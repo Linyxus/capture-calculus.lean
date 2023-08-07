@@ -197,6 +197,13 @@ lemma PType.open_tvar_weaken_tvar_id (P : PType n m) :
   rw [TypeMap.open_tvar_comp_weaken_tvar]
   simp [PType.tsubst_id]
 
+lemma CType.open_tvar_weaken_tvar_id (T : CType n m) :
+  T.weaken_tvar.open_tvar R = T := by
+  simp [open_tvar, weaken_tvar]
+  simp [tsubst_rename]
+  rw [TypeMap.open_tvar_comp_weaken_tvar]
+  simp [CType.tsubst_id]
+
 lemma TypeMap.ext_tvar_comp (g1 : TypeMap n m1 m2) (g2 : TypeMap n m2 m3) :
   (g1.map (fun P => P.tsubst g2)).ext_tvar = g1.ext_tvar.map (fun P => P.tsubst g2.ext_tvar) := by
   funext X
@@ -246,6 +253,9 @@ lemma CType.tsubst_comp (T : CType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n 
 
 lemma PType.open_tvar_def {n m : Nat} (S : PType n m.succ) {R} :
   S.open_tvar R = S.tsubst (tvar_open_map R) := rfl
+
+lemma CType.open_tvar_def {n m : Nat} (T : CType n m.succ) {R} :
+  T.open_tvar R = T.tsubst (tvar_open_map R) := rfl
 
 lemma TypeMap.tsubst_open_tvar_map_comm (S : PType n m1) (g : TypeMap n m1 m2) :
   (tvar_open_map S).map (fun P => P.tsubst g) = g.ext_tvar.map (fun P => P.tsubst (tvar_open_map (S.tsubst g))) := by

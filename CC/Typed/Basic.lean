@@ -76,6 +76,34 @@ theorem Typed.app_inv :
   apply Typed.app_inv'
   rfl
 
+theorem Typed.tapp_inv' :
+  t0 = Term.tapp x S ->
+  Typed Γ t0 C0 U ->
+  ∃ Cx Cf U0,
+    Typed Γ (Term.var x) Cx (CType.capt Cf (PType.tarr S U0)) ∧
+    Subtype Γ (U0.open_tvar S) U := by
+    intros he h
+    induction h <;> try (solve | cases he)
+    case tapp =>
+      cases he
+      repeat apply Exists.intro
+      repeat apply And.intro
+      assumption
+      apply Subtype.refl
+    case sub hsub ih =>
+      have ih := ih he
+      let ⟨Cx, Cf, U0, ht, hs⟩ := ih
+      repeat apply Exists.intro; repeat apply And.intro
+      trivial
+      apply Subtype.trans <;> trivial
+
+theorem Typed.tapp_inv :
+  Typed Γ (Term.tapp x S) C0 U ->
+  ∃ Cx Cf U0,
+    Typed Γ (Term.var x) Cx (CType.capt Cf (PType.tarr S U0)) ∧
+    Subtype Γ (U0.open_tvar S) U := by
+  apply Typed.tapp_inv'; aesop
+
 theorem Typed.var_typing_bound' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->
