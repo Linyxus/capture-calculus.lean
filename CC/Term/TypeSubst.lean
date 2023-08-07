@@ -20,6 +20,11 @@ def Term.tsubst (t : Term n m1) (σ : TypeMap n m1 m2) : Term n m2 :=
 def Term.open_tvar (t : Term n m.succ) (R : PType n m) : Term n m :=
   t.tsubst (tvar_open_map R)
 
+@[simp]
+lemma Term.tsubst_id (t : Term n m) :
+  t.tsubst TypeMap.id = t := by
+  induction t <;> try (solve | simp [Term.tsubst, *, CType.tsubst_id, PType.tsubst_id])
+
 lemma Value.tsubst (v : Value t) :
   Value (t.tsubst g) := by
   cases v <;> constructor

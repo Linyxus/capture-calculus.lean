@@ -87,3 +87,13 @@ def Typed.tsubst {Δ : Ctx n m2}
     subst_vars
     simp [CType.tsubst_weaken_var_comm]
     trivial
+
+def Typed.narrow_tvar
+  (hsub : SubtypeP Γ T2 T1)
+  (h0 : Typed (Ctx.extend_tvar Γ T1) t Ct T) :
+  Typed (Ctx.extend_tvar Γ T2) t Ct T := by
+  rw [<- Term.tsubst_id (t := t), <- CType.tsubst_id (T := T)]
+  apply Typed.tsubst <;> try trivial
+  apply VarTypeMap.narrowing_tvar
+  apply TVarSubst.narrowing_tvar
+  trivial

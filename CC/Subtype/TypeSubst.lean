@@ -12,6 +12,7 @@ import CC.Typed.Basic
 import CC.Subtype
 import CC.Narrowing
 import CC.Subcapt.TypeSubst
+import CC.Narrowing
 
 namespace CC
 
@@ -98,3 +99,14 @@ def Subtype.tsubst
   constructor
   apply Subcapt.tsubst <;> trivial
   apply SubtypeP.tsubst <;> trivial
+
+def Subtype.narrow_tvar 
+  (hsub : SubtypeP Γ T' T)
+  (h0 : Subtype (Ctx.extend_tvar Γ T) T1 T2) :
+  Subtype (Ctx.extend_tvar Γ T') T1 T2 := by
+    rw [<- CType.tsubst_id (T := T1), <- CType.tsubst_id (T := T2)]
+    apply Subtype.tsubst
+    trivial
+    apply VarTypeMap.narrowing_tvar
+    apply TVarSubst.narrowing_tvar
+    trivial

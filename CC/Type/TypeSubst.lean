@@ -179,6 +179,12 @@ lemma PType.tsubst_id (P : PType n m1) :
     have ih := PType.tsubst_id S
     simp [tsubst, ih]
 
+lemma CType.tsubst_id (T : CType n m1) :
+  T.tsubst TypeMap.id = T := by
+  cases T
+  simp [tsubst]
+  simp [PType.tsubst_id]
+
 lemma TypeMap.open_tvar_comp_weaken_tvar :
   (tvar_open_map R).compv weaken_map = TypeMap.id := by
   funext X

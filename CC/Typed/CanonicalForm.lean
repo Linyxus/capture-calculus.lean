@@ -11,6 +11,7 @@ import CC.Subtype.Basic
 import CC.Subtype.Inversion
 import CC.Typed.Inversion
 import CC.Typed.Subst
+import CC.Typed.TypeSubst
 
 namespace CC
 
@@ -49,3 +50,39 @@ theorem Typed.cf_fun :
   ∃ C', Typed (Ctx.extend_var Γ T) t C' U := by
   intro h
   apply Typed.cf_fun' <;> trivial
+
+theorem Typed.cf_tfun' :
+  t0 = Term.tabs T' t ->
+  T0 = CType.capt C (PType.tarr T U) ->
+  Typed Γ t0 Ct T0 ->
+  ∃ C', Typed (Ctx.extend_tvar Γ T) t C' U := by
+  intro he1 he2 h
+  induction h <;> try (solve | cases he1 | cases he2)
+  case tabs h ih =>
+    cases he1; cases he2
+    aesop
+  case sub h hsub ih =>
+    cases he1; cases he2
+    cases hsub; rename_i hc hs
+    have h1 := SubtypeP.tfun_inv hs
+    cases h1
+    case inl h1 =>
+      cases h1; subst_vars
+      exfalso
+      apply Typed.value_typing <;> (solve | constructor | trivial)
+    case inr h1 =>
+      let ⟨T', U', he, hs1, hs2⟩ := h1
+      clear h1
+      subst_vars
+      have ih' := ih rfl rfl
+      cases ih'; rename_i C0 ih
+      constructor
+      apply Typed.sub
+      apply Typed.narrow_tvar
+      repeat trivial
+
+theorem Typed.cf_tfun :
+  Typed Γ (Term.tabs T' t) Ct (CType.capt C (PType.tarr T U)) ->
+  ∃ C', Typed (Ctx.extend_tvar Γ T) t C' U := by
+  intro h
+  apply Typed.cf_tfun' <;> trivial
