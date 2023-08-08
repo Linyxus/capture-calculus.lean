@@ -104,6 +104,30 @@ theorem Typed.tapp_inv :
     Subtype Γ (U0.open_tvar S) U := by
   apply Typed.tapp_inv'; aesop
 
+theorem Typed.unbox_inv' :
+  t0 = Term.unbox C x ->
+  Typed Γ t0 C0 U ->
+  ∃ Cx Cf,
+    Typed Γ (Term.var x) Cx (CType.capt Cf (PType.boxed U)) := by
+    intros he h
+    induction h <;> try (solve | cases he)
+    case unbox => aesop
+    case sub ih =>
+      have ih' := ih he
+      let ⟨Cx, Cf, hx⟩ := ih'
+      repeat apply Exists.intro
+      apply Typed.sub
+      exact hx
+      constructor
+      apply Subcapt.refl
+      apply SubtypeP.boxed
+      trivial
+
+theorem Typed.unbox_inv :
+  Typed Γ (Term.unbox C x) C0 U ->
+  ∃ Cx Cf,
+    Typed Γ (Term.var x) Cx (CType.capt Cf (PType.boxed U)) := by apply Typed.unbox_inv'; aesop
+
 theorem Typed.var_typing_bound' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->

@@ -59,7 +59,18 @@ theorem preservation :
     exact h3
     trivial
     constructor
-  case red_open => sorry
+  case red_open hl =>
+    cases ht with
+    | state hs hv =>
+      have h1 := Typed.unbox_inv hv
+      let ⟨Cx, Cf, hx⟩ := h1
+      have h2 := lookup_box hs hx hl
+      let ⟨C2, hy⟩ := h2
+      apply Exists.intro T1
+      constructor
+      constructor; trivial
+      trivial
+      constructor
   case red_rename => sorry
   case red_liftval => sorry
   case red_ctx => sorry
