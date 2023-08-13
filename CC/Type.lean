@@ -46,6 +46,18 @@ def CType.weaken_var (T : CType n m) : CType n.succ m :=
 def CType.weaken_tvar (T : CType n m) : CType n m.succ :=
   T.rename id weaken_map
 
+def CType.weaken_var1 (T : CType (Nat.succ n) m) : CType n.succ.succ m :=
+  T.rename weaken_map.ext id
+
+lemma CType.weaken_var1_def {T : CType (Nat.succ n) m} :
+  T.weaken_var1 = T.rename weaken_map.ext id := rfl
+
+def PType.weaken_var1 (P : PType (Nat.succ n) m) : PType n.succ.succ m :=
+  P.rename weaken_map.ext id
+
+lemma PType.weaken_var1_def {P : PType (Nat.succ n) m} :
+  P.weaken_var1 = P.rename weaken_map.ext id := rfl
+
 def CType.open_var (T : CType n.succ m) (k : Fin n) : CType n m :=
   T.rename (open_map k) id
 

@@ -45,6 +45,9 @@ def Value.rename {t : Term n1 m1} (v : Value t)
 def Term.weaken_var (t : Term n m) : Term n.succ m :=
   t.rename weaken_map id
 
+def Term.weaken_var1 (t : Term (Nat.succ n) m) : Term n.succ.succ m :=
+  t.rename weaken_map.ext id
+
 def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
   t.rename id weaken_map
 

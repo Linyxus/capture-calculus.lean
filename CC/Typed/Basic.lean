@@ -128,6 +128,108 @@ theorem Typed.unbox_inv :
   ∃ Cx Cf,
     Typed Γ (Term.var x) Cx (CType.capt Cf (PType.boxed U)) := by apply Typed.unbox_inv'; aesop
 
+def LetHole 
+  (Γ : Ctx n m) 
+  (u : Term n.succ m)
+  (T : CType n m) (U : CType n m) : Prop :=
+  ∀ Ct' t',
+    Typed Γ t' Ct' T ->
+    ∃ C', Typed Γ (Term.letval t' u) C' U
+
+def LetHole1
+  (Γ : Ctx n m) 
+  (u : Term n.succ m)
+  (T : CType n m) (U : CType n m) : Prop :=
+  ∀ Ct' t' P,
+    Typed (Ctx.extend_var Γ P) t' Ct' T.weaken_var ->
+    ∃ C', Typed (Ctx.extend_var Γ P) (Term.letval t' u.weaken_var1) C' U.weaken_var
+
+theorem Typed.let_inv' :
+  t0 = Term.letval t u ->
+  Typed Γ t0 C0 U ->
+  ∃ Ct Cu T U0 U1,
+    Typed Γ t Ct T ∧
+    Typed (Ctx.extend_var Γ T) u Cu U0 ∧
+    U0 = CType.weaken_var U1 ∧
+    Subtype Γ U1 U ∧
+    LetHole Γ u T U ∧
+    LetHole1 Γ u T U := by
+  intro he h
+  induction h <;> try (solve | cases he)
+  case letval1 =>
+    cases he
+    repeat apply Exists.intro
+    repeat (apply And.intro; (first | assumption | apply Subtype.refl))
+    apply And.intro
+    · intros Ct' t' Ht'
+      constructor
+      apply Typed.letval1 <;> try assumption
+    · intros Ct' t' P Ht'
+      apply Exists.intro
+      apply Typed.letval1
+      exact Ht'
+      apply Typed.weaken_var1
+      trivial
+      subst_vars
+      simp [CType.weaken_var1_weaken_var]
+      unfold CaptureSet.weaken_var1
+      apply DropBinder.rename
+      assumption
+  case letval2 =>
+    cases he
+    repeat apply Exists.intro
+    repeat (apply And.intro; (first | assumption | apply Subtype.refl))
+    apply And.intro
+    · intros Ct' t' Ht'
+      constructor
+      apply Typed.letval1
+      assumption
+      assumption
+      assumption
+      constructor
+      assumption
+    · intros Ct' t' P Ht'
+      apply Exists.intro
+      apply Typed.letval1
+      exact Ht'
+      apply Typed.weaken_var1
+      trivial
+      subst_vars
+      simp [CType.weaken_var1_weaken_var]
+      apply DropBinder.drop_free
+      unfold CaptureSet.weaken_var1
+      apply DropBinderFree.rename
+      assumption
+  case sub hsub ih =>
+    let ⟨Ct, Cu, T, U0, U1, h1, h2, heq, hs, hh, hh1⟩ := ih he
+    repeat apply Exists.intro
+    repeat (apply And.intro; assumption)
+    apply And.intro
+    apply Subtype.trans <;> trivial
+    apply And.intro
+    · unfold LetHole at *
+      intros Ct' t' Ht'
+      have ⟨C', h0⟩ := hh Ct' t' Ht'
+      apply Exists.intro
+      apply Typed.sub <;> trivial
+    · intros Ct' t' P Ht'
+      have ⟨C', h0⟩ := hh1 Ct' t' P Ht'
+      apply Exists.intro
+      apply Typed.sub
+      · trivial
+      · apply Subtype.weaken_var; trivial
+
+theorem Typed.let_inv :
+  Typed Γ (Term.letval t u) C0 U ->
+  ∃ Ct Cu T U0 U1,
+    Typed Γ t Ct T ∧
+    Typed (Ctx.extend_var Γ T) u Cu U0 ∧
+    U0 = CType.weaken_var U1 ∧
+    Subtype Γ U1 U ∧
+    LetHole Γ u T U ∧ LetHole1 Γ u T U := by
+  intro h
+  apply let_inv' <;> trivial
+
 theorem Typed.var_typing_bound' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->

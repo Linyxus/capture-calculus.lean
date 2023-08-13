@@ -27,3 +27,11 @@ theorem Typed.value_typing
     cases h1
     subst_vars
     aesop
+
+-- def LetHole 
+--   (Γ : Ctx n m) 
+--   (u : Term n.succ m)
+--   (T : CType n m) (U : CType n m) : Prop :=
+--   ∀ Ct' t',
+--     Typed Γ t' Ct' T ->
+--     ∃ C', Typed Γ (Term.letval t' u) C' U

@@ -32,12 +32,15 @@ inductive Reduce : State n -> State n' -> Prop where
 | red_liftval :
   (v : Value t) ->
   Reduce ⟨γ, Term.letval t u⟩ ⟨Store.cons γ ⟨t, v⟩, u⟩ 
-| red_ctx :
+| red_ctx1 :
   Reduce ⟨γ, t⟩ ⟨γ, t'⟩ ->
   Reduce ⟨γ, Term.letval t u⟩ ⟨γ, Term.letval t' u⟩
+| red_ctx2 :
+  Reduce ⟨γ, t⟩ ⟨Store.cons γ v, t'⟩ ->
+  Reduce ⟨γ, Term.letval t u⟩ ⟨Store.cons γ v, Term.letval t' u.weaken_var1⟩
 
-inductive TypedState : State n -> CType n 0 -> Prop where
+inductive TypedState : State n -> Ctx n 0 -> CType n 0 -> Prop where
 | state :
   TypedStore γ Γ ->
   Typed Γ t C T ->
-  TypedState ⟨γ, t⟩ T
+  TypedState ⟨γ, t⟩ Γ T

@@ -135,3 +135,16 @@ def Typed.weaken_tvar (h : Typed Γ t C T) P :
    exact h
    apply VarRename.weaken_tvar_map
    apply TVarRename.weaken_tvar_map
+
+def Typed.weaken_var1 (h : Typed (Ctx.extend_var Γ T0) t C T) P :
+  Typed (Ctx.extend_var (Ctx.extend_var Γ P) T0.weaken_var) t.weaken_var1 C.weaken_var1 T.weaken_var1 := by
+  apply Typed.rename
+  exact h
+  apply VarRename.weaken_var1_map
+  apply TVarRename.weaken_var1_map
+
+-- def DropBinderFree.weaken_var1
+--   (h : DropBinderFree C C') :
+--   DropBinderFree C.weaken_var1 C'.weaken_var1 := by
+--   unfold CaptureSet.weaken_var1
+--   apply DropBinderFree.rename

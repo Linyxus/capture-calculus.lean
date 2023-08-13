@@ -186,3 +186,49 @@ def TVarRename.ext_tvar {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
 def CType.rename_split (T : CType n m) :
   T.rename f g = (T.rename id g).rename f id := by
   simp [CType.rename_comp]
+
+@[simp]
+def weaken1_weaken :
+  (weaken_map (n := n)).ext.comp weaken_map = weaken_map.comp weaken_map := by
+  funext x
+  simp [VarMap.comp, weaken_map, VarMap.ext]
+
+def CType.weaken_var1_weaken_var (T : CType n m) :
+  T.weaken_var.weaken_var1 = T.weaken_var.weaken_var := by
+  unfold weaken_var1; unfold weaken_var
+  simp [CType.rename_comp]
+
+lemma PType.weaken_var1_weaken_var (S : PType n m) :
+  S.weaken_var.weaken_var1 = S.weaken_var.weaken_var := by
+  unfold weaken_var1; unfold weaken_var
+  simp [PType.rename_comp]
+
+def VarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
+  VarRename (Ctx.extend_var Γ T) (Ctx.extend_var (Ctx.extend_var Γ P) T.weaken_var) weaken_map.ext id := by
+  intro x Q h
+  cases h with
+  | here =>
+    conv =>
+      arg 2
+      simp [VarMap.ext]
+    rw [<- CType.weaken_var1_def]
+    rw [CType.weaken_var1_weaken_var]
+    constructor
+  | there_var h0 =>
+    conv =>
+      arg 2
+      simp [VarMap.ext, weaken_map]
+    rw [<- CType.weaken_var1_def]
+    rw [CType.weaken_var1_weaken_var]
+    constructor
+    constructor
+    trivial
+
+def TVarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
+  TVarRename (Ctx.extend_var Γ T) (Ctx.extend_var (Ctx.extend_var Γ P) T.weaken_var) weaken_map.ext id := by
+  intro X S h
+  cases h with
+  | there_var h =>
+    simp
+    rw [<- PType.weaken_var1_def, PType.weaken_var1_weaken_var]
+    constructor; constructor; trivial

@@ -47,6 +47,9 @@ theorem mem_rename_of_mem (f : VarMap n1 n2) {C : CaptureSet n1} (h : x ∈ C) :
   simp [mem_def]
   aesop
 
+instance decidableMem (x : Fin n) (C : CaptureSet n) : Decidable (x ∈ C) :=
+  Finset.decidableMem _ _
+
 @[simp]
 theorem mem_rename {C : CaptureSet n} :
   y ∈ C.rename f ↔ ∃ x ∈ C, f x = y := by
@@ -78,4 +81,21 @@ theorem CaptureSet.rename_union {C1 C2 : CaptureSet n} :
 
 def CaptureSet.open_var (C : CaptureSet n.succ) (z : Fin n) : CaptureSet n :=
   C.rename (open_map z)
+
+lemma CaptureSet.val_eq {C1 C2 : CaptureSet n} (h : C1.elems = C2.elems) :
+  C1 = C2 := 
+  by cases C1; cases C2; aesop
+
+lemma CaptureSet.val_def :
+  ({ elems := xs } : CaptureSet n).elems = xs := rfl
+
+lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
+  (h : x ∈ (C1 ∪ C2).elems) :
+  x ∈ C1.elems ∨ x ∈ C2.elems := by
+  cases C1; cases C2
+  simp [union_def] at h
+  aesop
+
+def CaptureSet.weaken_var1 (C : CaptureSet (Nat.succ n)) : CaptureSet n.succ.succ :=
+  C.rename weaken_map.ext
   
