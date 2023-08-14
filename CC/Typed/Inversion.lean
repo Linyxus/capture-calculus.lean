@@ -28,10 +28,30 @@ theorem Typed.value_typing
     subst_vars
     aesop
 
--- def LetHole 
---   (Γ : Ctx n m) 
---   (u : Term n.succ m)
---   (T : CType n m) (U : CType n m) : Prop :=
---   ∀ Ct' t',
---     Typed Γ t' Ct' T ->
---     ∃ C', Typed Γ (Term.letval t' u) C' U
+theorem Typed.val_inv_fun'
+  (hv : Value t)
+  (he : T0 = CType.capt C (PType.arr T U))
+  (h : Typed Γ t Ct T0) : 
+  ∃ u1 u2, t = Term.abs u1 u2 := by
+  induction h <;> try (solve | cases he | cases hv)
+  case sub ht hsub ih => 
+    subst_vars
+    cases hsub; rename_i hsub
+    have h0 := SubtypeP.fun_inv hsub
+    cases h0 with
+    | inl h0 =>
+      cases h0; subst_vars
+      exfalso; apply Typed.value_typing
+      exact ht
+      exact hv
+      rfl
+    | inr h0 =>
+      let ⟨T0, U0, he, _⟩ := h0
+      subst_vars
+      aesop
+  case abs => aesop
+
+theorem Typed.val_inv_fun
+  (hv : Value t)
+  (h : Typed Γ t Ct (CType.capt C (PType.arr T U))) : 
+  ∃ u1 u2, t = Term.abs u1 u2 := by apply Typed.val_inv_fun' <;> trivial
