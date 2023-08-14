@@ -26,10 +26,14 @@ inductive LookupStore : ∀ {n}, Store n -> Fin n -> Val n 0 -> Prop where
   LookupStore γ x v ->
   LookupStore (Store.cons γ v0) x.succ v.weaken_var
 
-inductive TypedStore : Store n -> Ctx n 0 -> Prop where
+inductive TypedStore : Store n -> Ctx n m -> Prop where
 | empty :
   TypedStore Store.empty Ctx.empty
 | cons :
   TypedStore γ Γ ->
   Typed Γ t C T ->
   TypedStore (Store.cons γ ⟨t, isVal⟩) (Ctx.extend_var Γ T)
+
+lemma TypedStore.no_tvar {γ : Store n} {Γ : Ctx n m}
+  (h : TypedStore γ Γ) :
+  m = 0 := by induction h <;> rfl

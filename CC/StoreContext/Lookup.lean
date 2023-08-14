@@ -58,6 +58,8 @@ theorem lookup_box
   ∃ C0, Typed Γ (Term.var y) C0 T := by
   have h1 := Typed.var_typing_bound hx
   let ⟨C1, S1, hb, hsub⟩ := h1
+  have hz := TypedStore.no_tvar hs
+  subst_vars
   have h2 := lookup_store_typing hs hb hl
   let ⟨C2, ht⟩ := h2
   simp at ht
