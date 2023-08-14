@@ -135,3 +135,50 @@ theorem preservation :
       apply And.intro
       · exact h0
       · constructor
+
+inductive Answer : Term n m -> Prop where
+| val :
+  Value t ->
+  Answer t
+| var :
+  Answer (Term.var x)
+
+-- A wrapper judgement to make induction work
+inductive Reduce' : Store n -> Term n m -> Store n' -> Term n' m' -> Prop where
+| reduce :
+  Reduce ⟨γ, t⟩ ⟨γ', t'⟩ ->
+  Reduce' γ t γ' t'
+
+lemma lookup_store_result
+  (hst : TypedStore γ Γ)
+  (hx : Typed Γ (Term.var x) Cx (CType.capt C S)) :
+  ∃ v C0 C', LookupStore γ x v ∧ Typed Γ v.t C0 (CType.capt C' S) := by
+  have h1 := Typed.var_typing_bound hx
+  let ⟨C1, S1, hb, hsub1⟩ := h1; clear h1
+  have h2 := lookup_store_exists γ x
+  let ⟨v, hl⟩ := h2; clear h2
+  have h3 := lookup_store_typing hst hb hl
+  let ⟨C2, ht⟩ := h3; clear h3
+  repeat apply Exists.intro
+  constructor; assumption
+  apply Typed.sub; assumption
+  constructor; apply Subcapt.refl; trivial
+
+theorem progress
+  (ht : Typed Γ t C T)
+  (hst : TypedStore γ Γ) :
+  Answer t ∨ ∃ (n' m' : Nat) (γ' : Store n') (t' : Term n' m'), Reduce' γ t γ' t' := by
+  induction ht <;> try (solve | apply Or.inl; apply Answer.val; constructor | apply Or.inl; apply Answer.var)
+  case sub ih => apply ih <;> trivial
+  case app hx hy _ _ => 
+    have hz := TypedStore.no_tvar hst; subst_vars
+    have h0 := lookup_store_result hst hx
+    let ⟨⟨t, hv⟩, C0, C', hl, ht⟩ := h0; clear h0
+    have h1 := Typed.val_inv_fun hv ht
+    let ⟨u1, u2, he⟩ := h1; clear h1
+    subst_vars
+    apply Or.inr
+    repeat apply Exists.intro
+    constructor
+    apply Reduce.red_app; trivial
+  case tapp hx _ => sorry
