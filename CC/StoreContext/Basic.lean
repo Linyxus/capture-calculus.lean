@@ -40,3 +40,14 @@ theorem lookup_store_typing
     constructor
     apply Typed.weaken_var
     aesop
+
+lemma lookup_store_exists (γ : Store n) (x : Fin n) :
+  ∃ v, LookupStore γ x v := by
+  induction γ
+  case empty => cases x.isLt
+  case cons γ v ih =>
+    cases x using Fin.cases with
+    | H0 => constructor; constructor
+    | Hs x0 => 
+      have ih' := ih x0; cases ih'
+      constructor; constructor; assumption
