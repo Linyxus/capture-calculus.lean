@@ -55,3 +55,30 @@ theorem Typed.val_inv_fun
   (hv : Value t)
   (h : Typed Γ t Ct (CType.capt C (PType.arr T U))) : 
   ∃ u1 u2, t = Term.abs u1 u2 := by apply Typed.val_inv_fun' <;> trivial
+
+theorem Typed.val_inv_tfun'
+  (hv : Value t)
+  (he : T0 = CType.capt C (PType.tarr T U))
+  (h : Typed Γ t Ct T0) : 
+  ∃ S u, t = Term.tabs S u := by
+  induction h <;> try (solve | cases he | cases hv | aesop)
+  case sub ht hsub ih => 
+    subst_vars
+    cases hsub; rename_i hsub
+    have h0 := SubtypeP.tfun_inv hsub
+    cases h0 with
+    | inl h0 =>
+      cases h0; subst_vars
+      exfalso; apply Typed.value_typing
+      exact ht
+      exact hv
+      rfl
+    | inr h0 =>
+      let ⟨T0, U0, he, _⟩ := h0
+      subst_vars
+      aesop
+
+theorem Typed.val_inv_tfun
+  (hv : Value t)
+  (h : Typed Γ t Ct (CType.capt C (PType.tarr T U))) : 
+  ∃ S u, t = Term.tabs S u := by apply Typed.val_inv_tfun' <;> trivial
