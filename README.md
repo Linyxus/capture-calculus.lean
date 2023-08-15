@@ -1,8 +1,10 @@
 # Lean Mechanization of Capture Calculus
 
-but we are not yet there. Currently it is no more than a MNF System F<:.
+Currently it contains the mechanization of both System F<: and System CC<:box.
 
-The mechanization takes a de Bruijn indexed intrinsic term representation.
-
-Both preservation and progress are proven. With intrinsic terms we get preservation "for free" by definition from the reduction relation.
+- `fsub/`, the System F<: type soundness proof. Intrinsically typed and de Bruijn indexed.
+- `CC/`, the proof for System CC<:box. It is de Bruijn indexed and extrinsically typed.
+  Main type soundness results (progress and preservation) are in `CC/Reduction/Safety.lean`.
+  
+The next step is to mechanize the soundness theorems of the separation calculus.
 
