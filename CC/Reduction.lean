@@ -44,3 +44,13 @@ inductive TypedState : State n -> Ctx n 0 -> CType n 0 -> Prop where
   TypedStore γ Γ ->
   Typed Γ t C T ->
   TypedState ⟨γ, t⟩ Γ T
+
+inductive StoreStep : Store n -> Store n' -> Prop where
+| same :
+  StoreStep γ γ
+| extend :
+  StoreStep γ (Store.cons γ v)
+
+lemma Reduce.store_step
+  (h : Reduce ⟨γ, t⟩ ⟨γ', t'⟩) :
+  StoreStep γ γ' := by cases h <;> (solve | apply StoreStep.same | apply StoreStep.extend)

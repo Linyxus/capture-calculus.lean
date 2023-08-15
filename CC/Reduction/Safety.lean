@@ -169,7 +169,7 @@ theorem progress
   (hst : TypedStore γ Γ) :
   Answer t ∨ ∃ (n' m' : Nat) (γ' : Store n') (t' : Term n' m'), Reduce' γ t γ' t' := by
   induction ht <;> try (solve | apply Or.inl; apply Answer.val; constructor | apply Or.inl; apply Answer.var)
-  case sub ih => apply ih <;> trivial
+  case sub ih => apply ih; trivial
   case app hx hy _ _ => 
     have hz := TypedStore.no_tvar hst; subst_vars
     have h0 := lookup_store_result hst hx
@@ -181,4 +181,58 @@ theorem progress
     repeat apply Exists.intro
     constructor
     apply Reduce.red_app; trivial
-  case tapp hx _ => sorry
+  case tapp hx _ =>
+    have hz := TypedStore.no_tvar hst; subst_vars
+    have h0 := lookup_store_result hst hx
+    let ⟨⟨t, hv⟩, C0, C', hl, ht⟩ := h0; clear h0
+    have h1 := Typed.val_inv_tfun hv ht
+    let ⟨u1, u2, he⟩ := h1; clear h1
+    subst_vars
+    apply Or.inr
+    repeat apply Exists.intro
+    constructor
+    apply Reduce.red_tapp; trivial
+  case unbox hx _ => 
+    have hz := TypedStore.no_tvar hst; subst_vars
+    have h0 := lookup_store_result hst hx
+    let ⟨⟨t, hv⟩, C0, C', hl, ht⟩ := h0; clear h0
+    have h1 := Typed.val_inv_box hv ht
+    let ⟨x0, he⟩ := h1; clear h1
+    subst_vars
+    apply Or.inr
+    repeat apply Exists.intro
+    constructor
+    apply Reduce.red_open; trivial
+  case letval1 ih1 _ =>
+    have hz := TypedStore.no_tvar hst; subst_vars
+    have ih := ih1 hst
+    cases ih with
+    | inl ih => 
+      cases ih with
+      | var =>
+        apply Or.inr; repeat apply Exists.intro
+        constructor
+        apply Reduce.red_rename
+      | val ih =>
+        apply Or.inr; repeat apply Exists.intro
+        constructor
+        apply Reduce.red_liftval; trivial
+    | inr ih =>
+      let ⟨n0, m0, γ0, t0, ih⟩ := ih
+      cases ih; rename_i ih
+      have h1 := Reduce.store_step ih
+      cases h1 with
+      | same =>
+        apply Or.inr; repeat apply Exists.intro
+        constructor
+        apply Reduce.red_ctx1; trivial
+      | extend =>
+        apply Or.inr; repeat apply Exists.intro
+        constructor
+        apply Reduce.red_ctx2; trivial
+  case letval2 hv _ _ _ _ _ =>
+    have hz := TypedStore.no_tvar hst; subst_vars
+    apply Or.inr
+    repeat apply Exists.intro
+    constructor
+    apply Reduce.red_liftval; trivial
