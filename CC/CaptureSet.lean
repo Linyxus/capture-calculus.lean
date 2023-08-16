@@ -9,6 +9,18 @@ structure CaptureSet (n : Nat) where
   rdr : Bool
   cap : Bool
 
+def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
+  { elems := {}, rdr := C.rdr, cap := false }
+
+def CaptureSet.capSet (C : CaptureSet n) : CaptureSet n :=
+  { elems := {}, rdr := false, cap := C.cap }
+
+def singletonRdr : CaptureSet n :=
+  { elems := {}, rdr := true, cap := false }
+
+def singletonCap : CaptureSet n :=
+  { elems := {}, rdr := false, cap := true }
+
 instance : Membership (Fin n) (CaptureSet n) :=
   ⟨fun a s => a ∈ s.1⟩
 
