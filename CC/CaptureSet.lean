@@ -6,21 +6,23 @@ namespace CC
 
 structure CaptureSet (n : Nat) where
   elems : Finset (Fin n)
+  rdr : Bool
+  cap : Bool
 
 instance : Membership (Fin n) (CaptureSet n) :=
   ⟨fun a s => a ∈ s.1⟩
 
 instance : Singleton (Fin n) (CaptureSet n) :=
-  ⟨fun x => ⟨{x}⟩⟩ 
+  ⟨fun x => ⟨{x}, false, false⟩⟩ 
 
 instance : Union (CaptureSet n) :=
-  ⟨fun s t => ⟨s.1 ∪ t.1⟩⟩ 
+  ⟨fun s t => ⟨s.1 ∪ t.1, s.2 || t.2, s.3 || t.3⟩⟩ 
 
 instance : EmptyCollection (CaptureSet n) :=
-  ⟨⟨{}⟩⟩
+  ⟨⟨{}, false, false⟩⟩
 
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
-  ⟨C.elems.image f⟩
+  ⟨C.elems.image f, C.rdr, C.cap⟩
   
 def CaptureSet.weaken_var (C : CaptureSet n) : CaptureSet n.succ :=
   C.rename weaken_map
@@ -56,7 +58,8 @@ theorem mem_rename {C : CaptureSet n} :
   simp only [CaptureSet.rename, mem_def]
   aesop
 
-theorem union_def {C1 C2 : CaptureSet n} : C1 ∪ C2 = ⟨C1.1 ∪ C2.1⟩ := rfl
+theorem union_def {C1 C2 : CaptureSet n} : 
+  C1 ∪ C2 = ⟨C1.1 ∪ C2.1, C1.2 || C2.2, C1.3 || C2.3⟩ := rfl
 
 @[simp]
 theorem CaptureSet.rename_id : ∀ {C : CaptureSet n},
@@ -82,12 +85,15 @@ theorem CaptureSet.rename_union {C1 C2 : CaptureSet n} :
 def CaptureSet.open_var (C : CaptureSet n.succ) (z : Fin n) : CaptureSet n :=
   C.rename (open_map z)
 
-lemma CaptureSet.val_eq {C1 C2 : CaptureSet n} (h : C1.elems = C2.elems) :
+lemma CaptureSet.val_eq {C1 C2 : CaptureSet n} 
+  (h1 : C1.elems = C2.elems)
+  (h2 : C1.rdr = C2.rdr)
+  (h3 : C1.cap = C2.cap) :
   C1 = C2 := 
   by cases C1; cases C2; aesop
 
 lemma CaptureSet.val_def :
-  ({ elems := xs } : CaptureSet n).elems = xs := rfl
+  ({ elems := xs, rdr := b1, cap := b2 } : CaptureSet n).elems = xs := rfl
 
 lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
   (h : x ∈ (C1 ∪ C2).elems) :
