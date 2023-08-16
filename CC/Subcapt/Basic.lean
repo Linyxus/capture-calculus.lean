@@ -16,3 +16,5 @@ def Subcapt.refl :
   intro x0 h
   apply Subcapt.sc_elem
   aesop
+  · cases C; simp [CaptureSet.rdrSet]; apply Subcapt.sc_elem_rdr
+  · cases C; simp [CaptureSet.rdrSet]; apply Subcapt.sc_elem_cap

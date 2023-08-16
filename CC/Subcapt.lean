@@ -15,8 +15,10 @@ inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_elem :
   x ∈ C ->
   Subcapt Γ {x} C
-| sc_elem_root :
-  Subcapt Γ { elems := {}, rdr := b1, cap := b2 } { elems := C, rdr := b1, cap := b2 }
+| sc_elem_rdr :
+  Subcapt Γ { elems := {}, rdr := brdr, cap := false } { elems := C, rdr := brdr, cap := bcap }
+| sc_elem_cap :
+  Subcapt Γ { elems := {}, rdr := false, cap := bcap } { elems := C, rdr := brdr, cap := bcap }
 | sc_var :
   BoundVar Γ x (CType.capt C S) ->
   Subcapt Γ {x} C

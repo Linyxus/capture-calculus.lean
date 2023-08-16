@@ -28,7 +28,7 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (
     have H := σ h
     simp at H
     assumption
-  case sc_set hs =>
+  case sc_set hs hr1 hr2 =>
     apply Subcapt.sc_set
     intro x1 h1
     rw [mem_rename] at h1
@@ -37,3 +37,8 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (
     rw [rename_singleton] at h
     rw [<- eq2]
     assumption
+    apply hr1; assumption
+    apply hr2; assumption
+  case sc_elem_rdr => simp [CaptureSet.rename]; apply Subcapt.sc_elem_rdr
+  case sc_elem_cap => simp [CaptureSet.rename]; apply Subcapt.sc_elem_cap
+  case sc_rdr_cap => simp [CaptureSet.rename]; apply Subcapt.sc_rdr_cap
