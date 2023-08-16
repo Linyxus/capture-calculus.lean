@@ -9,12 +9,16 @@ def PType.tsubst (S : PType n m1) (σ : TypeMap n m1 m2) : PType n m2 :=
   match S with
   | PType.tvar X => σ X
   | PType.top => PType.top
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) =>
-    PType.arr (CType.capt C1 (S1.tsubst σ)) (CType.capt C2 (S2.tsubst σ.ext_var))
+  | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) =>
+    PType.arr D (CType.capt C1 (S1.tsubst σ)) (CType.capt C2 (S2.tsubst σ.ext_var))
   | PType.tarr S1 (CType.capt C2 S2) =>
     PType.tarr (S1.tsubst σ) (CType.capt C2 (S2.tsubst σ.ext_tvar))
   | PType.boxed (CType.capt C1 S1) =>
     PType.boxed (CType.capt C1 (S1.tsubst σ))
+  | PType.ref S =>
+    PType.ref (S.tsubst σ)
+  | PType.reader S =>
+    PType.reader (S.tsubst σ)
 
 def CType.tsubst (T : CType n m1) (σ : TypeMap n m1 m2) : CType n m2 :=
   match T with
@@ -34,7 +38,7 @@ theorem PType.rename_tsubst (T : PType n1 m1)
     simp [tsubst, rename, TypeMap.then]
   | PType.top => by
     simp [tsubst, rename, TypeMap.then]
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+  | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.rename_tsubst S1 (σ := σ) (f := f) (g := g)
     have ih2 := PType.rename_tsubst S2 (σ := σ.ext_var) (f := f.ext) (g := g)
     simp [rename, tsubst, ih1]
@@ -49,6 +53,12 @@ theorem PType.rename_tsubst (T : PType n1 m1)
   | PType.boxed (CType.capt C1 S1) => by
     have ih1 := PType.rename_tsubst S1 (σ := σ) (f := f) (g := g)
     simp [rename, tsubst, ih1]
+  | PType.ref S => by
+    have ih := PType.rename_tsubst S (σ := σ) (f := f) (g := g)
+    simp [rename, tsubst, ih]
+  | PType.reader S => by
+    have ih := PType.rename_tsubst S (σ := σ) (f := f) (g := g)
+    simp [rename, tsubst, ih]
 
 theorem CType.rename_tsubst (T : CType n1 m1)
   {σ : TypeMap n1 m1 m2} {f : VarMap n1 n2} {g : VarMap m2 m3} :
@@ -64,7 +74,7 @@ theorem PType.tsubst_rename (T : PType n1 m1)
     simp [tsubst, rename, TypeMap.compv]
   | PType.top => by
     simp [tsubst, rename, TypeMap.compv]
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+  | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.tsubst_rename S1 (f := f) (g := g) (σ := σ)
     have ih2 := PType.tsubst_rename S2 (f := f.ext) (g := g) (σ := σ.ext_var)
     simp [rename, tsubst, ih1]
@@ -79,6 +89,12 @@ theorem PType.tsubst_rename (T : PType n1 m1)
   | PType.boxed (CType.capt C1 S1) => by
     have ih1 := PType.tsubst_rename S1 (f := f) (g := g) (σ := σ)
     simp [rename, tsubst, ih1]
+  | PType.ref S => by
+    have ih := PType.tsubst_rename S (f := f) (g := g) (σ := σ)
+    simp [rename, tsubst, ih]
+  | PType.reader S => by
+    have ih := PType.tsubst_rename S (f := f) (g := g) (σ := σ)
+    simp [rename, tsubst, ih]
 
 theorem CType.tsubst_rename (T : CType n1 m1)
   {f : VarMap n1 n2} {g : VarMap m1 m2} {σ : TypeMap n2 m2 m3} :
@@ -97,7 +113,7 @@ theorem CType.rename_open_tvar_comm (T : CType n1 m1.succ)
 
 @[simp]
 lemma tsubst_arr :
-  (PType.arr T U).tsubst f = PType.arr (T.tsubst f) (U.tsubst f.ext_var) := by
+  (PType.arr D T U).tsubst f = PType.arr D (T.tsubst f) (U.tsubst f.ext_var) := by
   cases T; cases U
   simp [PType.tsubst]
   simp [CType.tsubst]
@@ -167,7 +183,7 @@ lemma PType.tsubst_id (P : PType n m1) :
   match P with
   | PType.tvar X => by simp [tsubst, TypeMap.id]
   | PType.top => by simp [tsubst]
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+  | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.tsubst_id S1
     have ih2 := PType.tsubst_id S2
     simp [tsubst, ih1, ih2]
@@ -176,6 +192,12 @@ lemma PType.tsubst_id (P : PType n m1) :
     have ih2 := PType.tsubst_id S2
     simp [tsubst, ih1, ih2]
   | PType.boxed (CType.capt C S) => by
+    have ih := PType.tsubst_id S
+    simp [tsubst, ih]
+  | PType.ref S => by
+    have ih := PType.tsubst_id S
+    simp [tsubst, ih]
+  | PType.reader S => by
     have ih := PType.tsubst_id S
     simp [tsubst, ih]
 
@@ -227,7 +249,7 @@ lemma PType.tsubst_comp (T : PType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n 
   (T.tsubst g1).tsubst g2 = T.tsubst (g1.map (fun P => P.tsubst g2)) :=
   match T with
   | PType.tvar X => by simp [tsubst, TypeMap.map]
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
+  | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.tsubst_comp S1 g1 g2
     have ih2 := PType.tsubst_comp S2 g1.ext_var g2.ext_var
     simp [tsubst, ih1]
@@ -243,6 +265,12 @@ lemma PType.tsubst_comp (T : PType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n 
     simp [tsubst, TypeMap.map]
   | PType.boxed (CType.capt C1 S1) => by
     have ih := PType.tsubst_comp S1 g1 g2
+    simp [tsubst, ih]
+  | PType.ref S => by
+    have ih := PType.tsubst_comp S g1 g2
+    simp [tsubst, ih]
+  | PType.reader S => by
+    have ih := PType.tsubst_comp S g1 g2
     simp [tsubst, ih]
 
 lemma CType.tsubst_comp (T : CType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n m2 m3) :
