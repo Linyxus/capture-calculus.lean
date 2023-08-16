@@ -29,7 +29,7 @@ def Subcapt.subst (σ : VarSubst Γ Δ f) :
     have h' := σ h
     simp [CType.rename] at h'
     apply Typed.var_inv_subcapt; aesop
-  case sc_set hs =>
+  case sc_set hs hr1 hr2 =>
     apply Subcapt.sc_set
     intro x1 h1
     rw [mem_rename] at h1
@@ -38,3 +38,7 @@ def Subcapt.subst (σ : VarSubst Γ Δ f) :
     rw [rename_singleton] at h
     rw [<- eq2]
     assumption
+    aesop; aesop
+  case sc_elem_rdr => apply sc_elem_rdr
+  case sc_elem_cap => apply sc_elem_cap
+  case sc_rdr_cap => apply sc_rdr_cap
