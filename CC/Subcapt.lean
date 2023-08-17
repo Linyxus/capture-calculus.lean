@@ -7,6 +7,14 @@ import CC.Type
 
 namespace CC
 
+inductive IsReader : Ctx n m -> PType n m -> Prop where
+| reader :
+  IsReader Γ (PType.reader S)
+| widen :
+  BoundTVar Γ X S ->
+  IsReader Γ S ->
+  IsReader Γ (PType.tvar X)
+
 inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_trans :
   Subcapt Γ C1 C2 ->
@@ -29,3 +37,7 @@ inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
   Subcapt Γ C1 C2
 | sc_rdr_cap :
   Subcapt Γ { elems := {}, rdr := true, cap := false } { elems := {}, rdr := false, cap := true }
+| sc_reader :
+  BoundVar Γ x D (CType.capt C S) ->
+  IsReader Γ S ->
+  Subcapt Γ {x} { elems := {}, rdr := true, cap := false }
