@@ -16,7 +16,7 @@ namespace CC
 
 theorem lookup_store_typing
   (hs : TypedStore γ Γ)
-  (hx : BoundVar Γ x T)
+  (hx : BoundVar Γ x D T)
   (hl : LookupStore γ x v) :
   ∃ C, Typed Γ v.t C T := by
   induction hl
@@ -25,17 +25,17 @@ theorem lookup_store_typing
     simp [Val.weaken_var]
     cases hx
     rename_i C T _ h _
-    have h' := h.weaken_var T
+    have h' := h.weaken_var (D := {}) T
     apply Exists.intro
     apply h'
   case there ih =>
     cases hs
     rename_i hs
     have hx' := BoundVar.pred hx
-    let ⟨T0, ⟨hx1, hx2⟩⟩ := hx'
+    let ⟨T0, D, ⟨hx1, hx2, hx3⟩⟩ := hx'
     clear hx'
     subst_vars
-    have ih' := ih hs hx2
+    have ih' := ih hs hx3
     cases ih'
     constructor
     apply Typed.weaken_var

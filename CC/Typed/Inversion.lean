@@ -30,9 +30,9 @@ theorem Typed.value_typing
 
 theorem Typed.val_inv_fun'
   (hv : Value t)
-  (he : T0 = CType.capt C (PType.arr T U))
+  (he : T0 = CType.capt C (PType.arr D T U))
   (h : Typed Γ t Ct T0) : 
-  ∃ u1 u2, t = Term.abs u1 u2 := by
+  ∃ u1 u2, t = Term.abs D u1 u2 := by
   induction h <;> try (solve | cases he | cases hv)
   case sub ht hsub ih => 
     subst_vars
@@ -53,8 +53,8 @@ theorem Typed.val_inv_fun'
 
 theorem Typed.val_inv_fun
   (hv : Value t)
-  (h : Typed Γ t Ct (CType.capt C (PType.arr T U))) : 
-  ∃ u1 u2, t = Term.abs u1 u2 := by apply Typed.val_inv_fun' <;> trivial
+  (h : Typed Γ t Ct (CType.capt C (PType.arr D T U))) : 
+  ∃ u1 u2, t = Term.abs D u1 u2 := by apply Typed.val_inv_fun' <;> trivial
 
 theorem Typed.val_inv_tfun'
   (hv : Value t)

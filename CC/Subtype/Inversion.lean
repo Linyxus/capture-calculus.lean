@@ -55,11 +55,11 @@ lemma SubtypeP.tvar_inv :
   apply SubtypeP.tvar_inv' <;> trivial
 
 private def SubtypeP.fun_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ T U, 
-    S2 = PType.arr T U ->
+  ∀ D T U, 
+    S2 = PType.arr D T U ->
     SubtypeP Γ S1 S2 ->
     (∃ X, S1 = PType.tvar X) ∨ 
-    (∃ T' U', S1 = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U)
+    (∃ T' U', S1 = PType.arr D T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ D T) U' U)
 
 lemma SubtypeP.fun_inv' :
   SubtypeP Γ S1 S2 ->
@@ -68,10 +68,10 @@ lemma SubtypeP.fun_inv' :
   apply SubtypeP.rec
     (motive_1 := fun Γ T1 T2 _ => True)
     (motive_2 := fun Γ S1 S2 _ => SubtypeP.fun_inv_motive Γ S1 S2)
-    <;> try (solve | trivial | intros; trivial | intros; unfold fun_inv_motive; intros _ _ he; cases he)
+    <;> try (solve | trivial | intros; trivial | intros; unfold fun_inv_motive; intros _ _ _ he; cases he)
   case refl =>
     intros; unfold fun_inv_motive
-    intros T U he h
+    intros D T U he h
     subst_vars
     apply Or.inr
     repeat apply Exists.intro
@@ -81,9 +81,9 @@ lemma SubtypeP.fun_inv' :
   case trans =>
     intros
     unfold fun_inv_motive at *
-    intros T U he h
+    intros D T U he h
     rename_i h1 h2 ih1 ih2
-    have ih2' := ih2 _ _ he h2
+    have ih2' := ih2 _ _ _ he h2
     cases ih2'
     case inl ih =>
       let ⟨X0, he0⟩ := ih
@@ -93,7 +93,7 @@ lemma SubtypeP.fun_inv' :
     case inr ih =>
       let ⟨T', U', he, ih1, ih2⟩ := ih
       subst_vars
-      have ih' := ih1 _ _ rfl h1
+      have ih' := ih1 _ _ _ rfl h1
       cases ih'
       case inl => aesop
       case inr =>
@@ -114,7 +114,7 @@ lemma SubtypeP.fun_inv' :
   case tvar =>
     intros
     unfold fun_inv_motive at *
-    intros T U he h
+    intros D T U he h
     subst_vars
     apply Or.inl
     apply Exists.intro
@@ -122,19 +122,19 @@ lemma SubtypeP.fun_inv' :
   case arr =>
     intros
     unfold fun_inv_motive at *
-    intros T U he h
+    intros D T U he h
     subst_vars
     apply Or.inr
     repeat apply Exists.intro
     constructor
-    rfl
+    cases he; rfl
     cases he
     constructor <;> trivial
 
 theorem SubtypeP.fun_inv :
-  SubtypeP Γ P (PType.arr T U) ->
+  SubtypeP Γ P (PType.arr D T U) ->
   (∃ X, P = PType.tvar X) ∨ 
-  (∃ T' U', P = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U) := by
+  (∃ T' U', P = PType.arr D T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ D T) U' U) := by
   intros
   apply SubtypeP.fun_inv' <;> aesop
 

@@ -121,7 +121,7 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
     apply DropBinderFree.rename; trivial
 
 def Typed.weaken_var (h : Typed Γ t C T) P :
-   Typed (Ctx.extend_var Γ P) t.weaken_var C.weaken_var T.weaken_var := by
+   Typed (Ctx.extend_var Γ D P) t.weaken_var C.weaken_var T.weaken_var := by
    apply Typed.rename
    exact h
    apply VarRename.weaken_var_map
@@ -136,8 +136,8 @@ def Typed.weaken_tvar (h : Typed Γ t C T) P :
    apply VarRename.weaken_tvar_map
    apply TVarRename.weaken_tvar_map
 
-def Typed.weaken_var1 (h : Typed (Ctx.extend_var Γ T0) t C T) P :
-  Typed (Ctx.extend_var (Ctx.extend_var Γ P) T0.weaken_var) t.weaken_var1 C.weaken_var1 T.weaken_var1 := by
+def Typed.weaken_var1 (h : Typed (Ctx.extend_var Γ D T0) t C T) P :
+  Typed (Ctx.extend_var (Ctx.extend_var Γ E P) D.weaken_var T0.weaken_var) t.weaken_var1 C.weaken_var1 T.weaken_var1 := by
   apply Typed.rename
   exact h
   apply VarRename.weaken_var1_map

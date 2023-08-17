@@ -9,6 +9,9 @@ structure CaptureSet (n : Nat) where
   rdr : Bool
   cap : Bool
 
+structure SepDegree (n : Nat) where
+  elems : Finset (Fin n)
+
 def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
   { elems := {}, rdr := C.rdr, cap := false }
 
@@ -33,11 +36,29 @@ instance : Union (CaptureSet n) :=
 instance : EmptyCollection (CaptureSet n) :=
   ⟨⟨{}, false, false⟩⟩
 
+instance : Membership (Fin n) (SepDegree n) :=
+  ⟨fun a s => a ∈ s.1⟩
+
+instance : Singleton (Fin n) (SepDegree n) :=
+  ⟨fun x => ⟨{x}⟩⟩
+
+instance : Union (SepDegree n) :=
+  ⟨fun s t => ⟨s.1 ∪ t.1⟩⟩
+
+instance : EmptyCollection (SepDegree n) :=
+  ⟨⟨{}⟩⟩
+
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
   ⟨C.elems.image f, C.rdr, C.cap⟩
+
+def SepDegree.rename (C : SepDegree n1) (f : VarMap n1 n2) : SepDegree n2 :=
+  ⟨C.elems.image f⟩
   
 def CaptureSet.weaken_var (C : CaptureSet n) : CaptureSet n.succ :=
   C.rename weaken_map
+
+def SepDegree.weaken_var (D : SepDegree n) : SepDegree n.succ :=
+  D.rename weaken_map
 
 theorem singleton_val (x : Fin n) :
   ({x} : CaptureSet n).1 = {x} := rfl
@@ -52,6 +73,12 @@ theorem rename_singleton (x : Fin n) (f : VarMap n n') :
 theorem rename_empty (f : VarMap n n') :
   CaptureSet.rename ∅ f = ∅ := by
   simp [CaptureSet.rename]
+  aesop
+
+@[simp]
+theorem SepDegree.rename_empty :
+  SepDegree.rename {} f = {} := by
+  simp [SepDegree.rename]
   aesop
 
 theorem mem_def {x : Fin n} {C : CaptureSet n} : x ∈ C ↔ x ∈ C.1 := Iff.rfl
@@ -80,6 +107,12 @@ theorem CaptureSet.rename_id : ∀ {C : CaptureSet n},
   simp [CaptureSet.rename]
 
 @[simp]
+theorem SepDegree.rename_id : ∀ {D : SepDegree n},
+  D.rename id = D := by
+  introv
+  simp [SepDegree.rename]
+
+@[simp]
 theorem CaptureSet.rename_id' : ∀ {C : CaptureSet n},
   C.rename (fun x => x) = C := by
   introv
@@ -89,6 +122,11 @@ theorem CaptureSet.rename_comp {C : CaptureSet n1} {f1 : VarMap n1 n2} {f2 : Var
   (C.rename f1).rename f2 = C.rename (f2.comp f1) := by
   unfold VarMap.comp
   simp [CaptureSet.rename, Finset.image_image]
+
+theorem SepDegree.rename_comp {D : SepDegree n1} {f1 : VarMap n1 n2} {f2 : VarMap n2 n3} :
+  (D.rename f1).rename f2 = D.rename (f2.comp f1) := by
+  unfold VarMap.comp
+  simp [SepDegree.rename, Finset.image_image]
 
 theorem CaptureSet.rename_union {C1 C2 : CaptureSet n} :
   (C1 ∪ C2).rename f = C1.rename f ∪ C2.rename f := by
@@ -116,4 +154,15 @@ lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
 
 def CaptureSet.weaken_var1 (C : CaptureSet (Nat.succ n)) : CaptureSet n.succ.succ :=
   C.rename weaken_map.ext
-  
+
+def SepDegree.weaken_var1 (D : SepDegree (Nat.succ n)) : SepDegree n.succ.succ :=
+  D.rename weaken_map.ext
+
+lemma SepDegree.weaken_var1_def {D : SepDegree (Nat.succ n)} :
+  D.weaken_var1 = D.rename weaken_map.ext := rfl
+
+lemma SepDegree.empty_weaken_var1 :
+  ({} : SepDegree (Nat.succ n)).weaken_var1 = {} := by simp [weaken_var1]
+
+lemma SepDegree.empty_weaken_var :
+  ({} : SepDegree n).weaken_var = {} := by simp [weaken_var]

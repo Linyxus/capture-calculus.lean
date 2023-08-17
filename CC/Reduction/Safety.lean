@@ -22,7 +22,7 @@ inductive Match : Ctx n1 m1 -> CType n1 m1 -> Ctx n2 m2 -> CType n2 m2 -> Prop w
 | same :
   Match Γ T Γ T
 | weaken :
-  Match Γ T (Ctx.extend_var Γ P) T.weaken_var
+  Match Γ T (Ctx.extend_var Γ {} P) T.weaken_var
 
 theorem preservation :
   TypedState st1 Γ1 T1 ->
@@ -154,7 +154,7 @@ lemma lookup_store_result
   (hx : Typed Γ (Term.var x) Cx (CType.capt C S)) :
   ∃ v C0 C', LookupStore γ x v ∧ Typed Γ v.t C0 (CType.capt C' S) := by
   have h1 := Typed.var_typing_bound hx
-  let ⟨C1, S1, hb, hsub1⟩ := h1; clear h1
+  let ⟨D1, C1, S1, hb, hsub1⟩ := h1; clear h1
   have h2 := lookup_store_exists γ x
   let ⟨v, hl⟩ := h2; clear h2
   have h3 := lookup_store_typing hst hb hl

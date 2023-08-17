@@ -43,7 +43,7 @@ theorem Typed.var_inv_subcapt :
 theorem Typed.app_inv' :
   t0 = Term.app x y ->
   Typed Γ t0 C0 U ->
-  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+  ∃ Cx Cy Cf D T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr D T U0)) ∧ 
     Typed Γ (Term.var y) Cy T ∧
     Subtype Γ (U0.open_var y) U := by
   intro heq h
@@ -58,7 +58,7 @@ theorem Typed.app_inv' :
     apply Subtype.refl
   case sub h hsub ih =>
     have ih' := ih heq
-    let ⟨Cx0, Cy0, Cf0, T0, U0, hx, hy, heq0⟩ := ih'
+    let ⟨Cx0, Cy0, Cf0, D0, T0, U0, hx, hy, heq0⟩ := ih'
     clear ih
     subst_vars
     repeat apply Exists.intro
@@ -70,7 +70,7 @@ theorem Typed.app_inv' :
 
 theorem Typed.app_inv :
   Typed Γ (Term.app x y) C0 U ->
-  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+  ∃ Cx Cy Cf D T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr D T U0)) ∧ 
     Typed Γ (Term.var y) Cy T ∧
     Subtype Γ (U0.open_var y) U := by
   apply Typed.app_inv'
@@ -141,15 +141,15 @@ def LetHole1
   (u : Term n.succ m)
   (T : CType n m) (U : CType n m) : Prop :=
   ∀ Ct' t' P,
-    Typed (Ctx.extend_var Γ P) t' Ct' T.weaken_var ->
-    ∃ C', Typed (Ctx.extend_var Γ P) (Term.letval t' u.weaken_var1) C' U.weaken_var
+    Typed (Ctx.extend_var Γ {} P) t' Ct' T.weaken_var ->
+    ∃ C', Typed (Ctx.extend_var Γ {} P) (Term.letval t' u.weaken_var1) C' U.weaken_var
 
 theorem Typed.let_inv' :
   t0 = Term.letval t u ->
   Typed Γ t0 C0 U ->
   ∃ Ct Cu T U0 U1,
     Typed Γ t Ct T ∧
-    Typed (Ctx.extend_var Γ T) u Cu U0 ∧
+    Typed (Ctx.extend_var Γ {} T) u Cu U0 ∧
     U0 = CType.weaken_var U1 ∧
     Subtype Γ U1 U ∧
     LetHole Γ u T U ∧
@@ -168,6 +168,7 @@ theorem Typed.let_inv' :
       apply Exists.intro
       apply Typed.letval1
       exact Ht'
+      rw [<- SepDegree.empty_weaken_var]
       apply Typed.weaken_var1
       trivial
       subst_vars
@@ -192,6 +193,7 @@ theorem Typed.let_inv' :
       apply Exists.intro
       apply Typed.letval1
       exact Ht'
+      rw [<- SepDegree.empty_weaken_var]
       apply Typed.weaken_var1
       trivial
       subst_vars
@@ -223,7 +225,7 @@ theorem Typed.let_inv :
   Typed Γ (Term.letval t u) C0 U ->
   ∃ Ct Cu T U0 U1,
     Typed Γ t Ct T ∧
-    Typed (Ctx.extend_var Γ T) u Cu U0 ∧
+    Typed (Ctx.extend_var Γ {} T) u Cu U0 ∧
     U0 = CType.weaken_var U1 ∧
     Subtype Γ U1 U ∧
     LetHole Γ u T U ∧ LetHole1 Γ u T U := by
@@ -234,7 +236,7 @@ theorem Typed.var_typing_bound' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->
   Typed Γ t0 Cx T0 ->
-  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by
+  ∃ D C' S', BoundVar Γ x D (CType.capt C' S') ∧ SubtypeP Γ S' S := by
   intro he1 he2 h
   induction h <;> try (solve | cases he1 | cases he2)
   case var hb =>
@@ -247,7 +249,7 @@ theorem Typed.var_typing_bound' :
     cases he1; cases he2
     cases T
     have ih := ih rfl rfl
-    let ⟨C', S, hb, hsub0⟩ := ih
+    let ⟨D, C', S, hb, hsub0⟩ := ih
     repeat (apply Exists.intro)
     apply And.intro
     exact hb
@@ -256,7 +258,7 @@ theorem Typed.var_typing_bound' :
 
 theorem Typed.var_typing_bound :
   Typed Γ (Term.var x) Cx (CType.capt C S) ->
-  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by 
+  ∃ D C' S', BoundVar Γ x D (CType.capt C' S') ∧ SubtypeP Γ S' S := by 
   apply Typed.var_typing_bound' <;> aesop
 
 theorem Typed.var_typing_captures'
