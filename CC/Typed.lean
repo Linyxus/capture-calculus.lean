@@ -20,6 +20,15 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
   | drop_free : DropBinderFree C C' -> DropBinder C C'
   | drop : DropBinder (C.weaken_var ∪ {0}) C
 
+inductive LetC : Term n m -> CaptureSet n -> CaptureSet n.succ -> CaptureSet n -> Prop where
+  | normal :
+    DropBinder Cu Cu' ->
+    LetC t Ct Cu (Ct ∪ Cu')
+  | gc :
+    DropBinderFree Cu Cu' ->
+    Value t ->
+    LetC t Ct Cu Cu'
+
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
   BoundVar Γ x D (CType.capt C S) ->
@@ -48,19 +57,12 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | unbox :
   Typed Γ (Term.var x) Cx (CType.capt C0 (PType.boxed (CType.capt C S))) ->
   Typed Γ (Term.unbox C x) (C ∪ {x}) (CType.capt C S)
-| letval1 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
+| letval :
   Typed Γ t Ct T ->
   Typed (Ctx.extend_var Γ {} T) u Cu U ->
   U = U'.weaken_var ->
-  DropBinder Cu Cu' ->
-  Typed Γ (Term.letval t u) (Ct ∪ Cu') U'
-| letval2 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
-  Typed Γ v Ct T ->
-  Value v ->
-  Typed (Ctx.extend_var Γ {} T) u Cu U ->
-  U = U'.weaken_var ->
-  DropBinderFree Cu Cu' ->
-  Typed Γ (Term.letval v u) Cu' U'
+  LetC t Ct Cu Cu' ->
+  Typed Γ (Term.letval t u) Cu' U'
 
 -- The following provides a function that computes the capture set defined by DropBinder.
 -- They are currently unused, therefore commented and unported.
