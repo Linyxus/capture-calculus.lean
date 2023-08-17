@@ -19,7 +19,7 @@ structure State (n : Nat) where
 
 inductive Reduce : State n -> State n' -> Prop where
 | red_app :
-  LookupStore γ x ⟨Term.abs T t, pv⟩ ->
+  LookupStore γ x ⟨Term.abs D T t, pv⟩ ->
   Reduce ⟨γ, Term.app x y⟩ ⟨γ, t.open_var y⟩
 | red_tapp :
   LookupStore γ x ⟨Term.tabs S t, pv⟩ ->

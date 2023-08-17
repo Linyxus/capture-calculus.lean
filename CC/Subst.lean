@@ -14,16 +14,16 @@ import CC.Subtype.Rename
 namespace CC
 
 def VarSubst (Γ : Ctx n1 m) (Δ : Ctx n2 m) (f : VarMap n1 n2) : Prop :=
-  ∀ {x T}, BoundVar Γ x T -> Typed Δ (Term.var (f x)) {f x} (T.rename f id)
+  ∀ {x D T}, BoundVar Γ x D T -> Typed Δ (Term.var (f x)) {f x} (T.rename f id)
 
 def TVarSubst (Γ : Ctx n m1) (Δ : Ctx n m2) (g : TypeMap n m1 m2) : Prop :=
   ∀ {X S}, BoundTVar Γ X S -> SubtypeP Δ (g X) (S.tsubst g)
 
 def VarTypeMap (Γ : Ctx n m1) (Δ : Ctx n m2) (g : TypeMap n m1 m2) : Prop :=
-  ∀ {x T}, BoundVar Γ x T -> BoundVar Δ x (T.tsubst g)
+  ∀ {x D T}, BoundVar Γ x D T -> BoundVar Δ x D (T.tsubst g)
 
 theorem Typed.var_bound_type :
-  BoundVar Γ x T ->
+  BoundVar Γ x D T ->
   Typed Γ (Term.var x) {x} T := by
   intro hb
   cases T
@@ -36,8 +36,8 @@ theorem Typed.var_bound_type :
   constructor
 
 def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
-  VarSubst (Ctx.extend_var Γ P) (Ctx.extend_var Δ (P.rename f id)) f.ext := by
-  intros x T h
+  VarSubst (Ctx.extend_var Γ D P) (Ctx.extend_var Δ (D.rename f) (P.rename f id)) f.ext := by
+  intros x D T h
   cases h
   case here =>
     conv =>
@@ -58,13 +58,12 @@ def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
       simp [VarMap.ext]
     rw [<- CType.rename_weaken_comm]
     have h' := σ h
-    have h'' := h'.weaken_var (P.rename f id)
-    exact h''
+    apply h'.weaken_var
 
 def VarTypeMap.ext_var 
   (σ : VarTypeMap Γ Δ g) T :
-  VarTypeMap (Ctx.extend_var Γ T) (Ctx.extend_var Δ (T.tsubst g)) g.ext_var := by
-  intros x T h
+  VarTypeMap (Ctx.extend_var Γ D T) (Ctx.extend_var Δ D (T.tsubst g)) g.ext_var := by
+  intros x D T h
   cases h
   case here => 
     rw [CType.tsubst_weaken_var_comm]
@@ -78,7 +77,7 @@ def VarTypeMap.ext_var
 def VarTypeMap.ext_tvar
   (σ : VarTypeMap Γ Δ g) S :
   VarTypeMap (Ctx.extend_tvar Γ S) (Ctx.extend_tvar Δ (S.tsubst g)) g.ext_tvar := by
-  intros X S h
+  intros X D S h
   cases h
   case there_tvar =>
     rw [CType.tsubst_weaken_tvar_comm]
@@ -88,7 +87,7 @@ def VarTypeMap.ext_tvar
 
 def TVarSubst.ext_var
   (δ : TVarSubst Γ Δ g) P :
-  TVarSubst (Ctx.extend_var Γ P) (Ctx.extend_var Δ (P.tsubst g)) g.ext_var := by
+  TVarSubst (Ctx.extend_var Γ D P) (Ctx.extend_var Δ D (P.tsubst g)) g.ext_var := by
   intros X S h
   cases h
   case there_var h0 =>
@@ -122,7 +121,7 @@ def TVarSubst.ext_tvar
 
 def VarSubst.ext_tvar (σ : VarSubst Γ Δ f) R :
   VarSubst (Ctx.extend_tvar Γ R) (Ctx.extend_tvar Δ (R.rename f id)) f := by
-  intros X T h
+  intros X D T h
   cases h
   case there_tvar h =>
     conv =>
@@ -138,9 +137,9 @@ def VarSubst.ext_tvar (σ : VarSubst Γ Δ f) R :
     exact h''
 
 def VarSubst.open_var {Γ : Ctx n m} {y : Fin n} (h : Typed Γ (Term.var y) {y} P) :
-  VarSubst (Ctx.extend_var Γ P) Γ (open_map y) := by
+  VarSubst (Ctx.extend_var Γ D P) Γ (open_map y) := by
   unfold VarSubst
-  intros x T hb
+  intros x D T hb
   cases hb
   case here =>
     simp
@@ -154,7 +153,7 @@ def VarSubst.open_var {Γ : Ctx n m} {y : Fin n} (h : Typed Γ (Term.var y) {y} 
     apply Typed.var_bound_type; aesop
 
 def TVarRename.open_var (h : Typed Γ (Term.var y) {y} P) :
-  TVarRename (Ctx.extend_var Γ P) Γ (open_map y) id := by
+  TVarRename (Ctx.extend_var Γ D P) Γ (open_map y) id := by
   unfold TVarRename
   intros X S h
   cases h

@@ -77,8 +77,8 @@ def Subtype.subst (h : Subtype Γ T1 T2) (σ : VarSubst Γ Δ f) (δ : TVarRenam
   apply SubtypeP.subst <;> aesop
 
 def Subtype.narrow_var (hsub : Subtype Γ T1 T2)
-  (h0 : Subtype (Ctx.extend_var Γ T2) U1 U2) :
-  Subtype (Ctx.extend_var Γ T1) U1 U2 := by
+  (h0 : Subtype (Ctx.extend_var Γ D T2) U1 U2) :
+  Subtype (Ctx.extend_var Γ D T1) U1 U2 := by
   have h := Subtype.subst h0 (VarSubst.narrowing_var hsub) TVarRename.narrowing_var
   rw [<- CType.rename_id (T := U1)]
   rw [<- CType.rename_id (T := U2)]

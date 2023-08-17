@@ -22,21 +22,21 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
 
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
-  BoundVar Γ x (CType.capt C S) ->
+  BoundVar Γ x D (CType.capt C S) ->
   Typed Γ (Term.var x) {x} (CType.capt {x} S)
 | sub :
   Typed Γ t C T ->
   Subtype Γ T T' ->
   Typed Γ t C T'
 | abs :
-  Typed (Ctx.extend_var Γ T) t C U ->
+  Typed (Ctx.extend_var Γ D T) t C U ->
   DropBinder C C' ->
-  Typed Γ (Term.abs T t) C' (CType.capt C' (PType.arr T U))
+  Typed Γ (Term.abs D T t) C' (CType.capt C' (PType.arr D T U))
 | tabs :
   Typed (Ctx.extend_tvar Γ S) t C T ->
   Typed Γ (Term.tabs S t) C (CType.capt C (PType.tarr S T))
 | app :
-  Typed Γ (Term.var x) Cx (CType.capt C (PType.arr T U)) ->
+  Typed Γ (Term.var x) Cx (CType.capt C (PType.arr D T U)) ->
   Typed Γ (Term.var y) Cy T ->
   Typed Γ (Term.app x y) (Cx ∪ Cy) (U.open_var y)
 | tapp :
@@ -50,14 +50,14 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
   Typed Γ (Term.unbox C x) (C ∪ {x}) (CType.capt C S)
 | letval1 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
   Typed Γ t Ct T ->
-  Typed (Ctx.extend_var Γ T) u Cu U ->
+  Typed (Ctx.extend_var Γ {} T) u Cu U ->
   U = U'.weaken_var ->
   DropBinder Cu Cu' ->
   Typed Γ (Term.letval t u) (Ct ∪ Cu') U'
 | letval2 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
   Typed Γ v Ct T ->
   Value v ->
-  Typed (Ctx.extend_var Γ T) u Cu U ->
+  Typed (Ctx.extend_var Γ {} T) u Cu U ->
   U = U'.weaken_var ->
   DropBinderFree Cu Cu' ->
   Typed Γ (Term.letval v u) Cu' U'

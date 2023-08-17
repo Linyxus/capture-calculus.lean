@@ -9,13 +9,17 @@ namespace CC
 def Term.tsubst (t : Term n m1) (σ : TypeMap n m1 m2) : Term n m2 :=
   match t with
   | Term.var x => Term.var x
-  | Term.abs T t => Term.abs (T.tsubst σ) (t.tsubst σ.ext_var)
+  | Term.abs D T t => Term.abs D (T.tsubst σ) (t.tsubst σ.ext_var)
   | Term.tabs S t => Term.tabs (S.tsubst σ) (t.tsubst σ.ext_tvar)
   | Term.app x y => Term.app x y
   | Term.tapp x S => Term.tapp x (S.tsubst σ)
   | Term.box x => Term.box x
   | Term.unbox C x => Term.unbox C x
   | Term.letval t u => Term.letval (t.tsubst σ) (u.tsubst σ.ext_var)
+  | Term.letvar D x t => Term.letvar D x (t.tsubst σ.ext_var)
+  | Term.reader x => Term.reader x
+  | Term.read x => Term.read x
+  | Term.write x y => Term.write x y
 
 def Term.open_tvar (t : Term n m.succ) (R : PType n m) : Term n m :=
   t.tsubst (tvar_open_map R)

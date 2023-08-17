@@ -32,7 +32,7 @@ inductive TypedStore : Store n -> Ctx n m -> Prop where
 | cons :
   TypedStore γ Γ ->
   Typed Γ t C T ->
-  TypedStore (Store.cons γ ⟨t, isVal⟩) (Ctx.extend_var Γ T)
+  TypedStore (Store.cons γ ⟨t, isVal⟩) (Ctx.extend_var Γ {} T)
 
 lemma TypedStore.no_tvar {γ : Store n} {Γ : Ctx n m}
   (h : TypedStore γ Γ) :

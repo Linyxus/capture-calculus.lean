@@ -57,6 +57,9 @@ def SepDegree.rename (C : SepDegree n1) (f : VarMap n1 n2) : SepDegree n2 :=
 def CaptureSet.weaken_var (C : CaptureSet n) : CaptureSet n.succ :=
   C.rename weaken_map
 
+def SepDegree.weaken_var (D : SepDegree n) : SepDegree n.succ :=
+  D.rename weaken_map
+
 theorem singleton_val (x : Fin n) :
   ({x} : CaptureSet n).1 = {x} := rfl
 
@@ -70,6 +73,12 @@ theorem rename_singleton (x : Fin n) (f : VarMap n n') :
 theorem rename_empty (f : VarMap n n') :
   CaptureSet.rename ∅ f = ∅ := by
   simp [CaptureSet.rename]
+  aesop
+
+@[simp]
+theorem SepDegree.rename_empty :
+  SepDegree.rename {} f = {} := by
+  simp [SepDegree.rename]
   aesop
 
 theorem mem_def {x : Fin n} {C : CaptureSet n} : x ∈ C ↔ x ∈ C.1 := Iff.rfl
@@ -145,4 +154,15 @@ lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
 
 def CaptureSet.weaken_var1 (C : CaptureSet (Nat.succ n)) : CaptureSet n.succ.succ :=
   C.rename weaken_map.ext
-  
+
+def SepDegree.weaken_var1 (D : SepDegree (Nat.succ n)) : SepDegree n.succ.succ :=
+  D.rename weaken_map.ext
+
+lemma SepDegree.weaken_var1_def {D : SepDegree (Nat.succ n)} :
+  D.weaken_var1 = D.rename weaken_map.ext := rfl
+
+lemma SepDegree.empty_weaken_var1 :
+  ({} : SepDegree (Nat.succ n)).weaken_var1 = {} := by simp [weaken_var1]
+
+lemma SepDegree.empty_weaken_var :
+  ({} : SepDegree n).weaken_var = {} := by simp [weaken_var]

@@ -21,7 +21,7 @@ namespace CC
 
 def VarTypeMap.open_tvar :
   VarTypeMap (Ctx.extend_tvar Γ S) Γ (tvar_open_map S') := by
-  intros x T h
+  intros x D T h
   cases h with
   | there_tvar h =>
     rw [<- CType.open_tvar_def]
