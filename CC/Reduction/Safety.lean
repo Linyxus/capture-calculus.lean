@@ -33,7 +33,7 @@ theorem preservation :
   case red_app hl =>
     cases ht; rename_i hs hv
     have h1 := Typed.app_inv hv
-    let ⟨Cx, Cy, Cf, T, U0, hx, hy, hsub⟩ := h1
+    let ⟨Cx, Cy, Cf, D, T, U0, hx, hy, hsub⟩ := h1
     have h2 := lookup_fun hs hx hl
     let ⟨C2, ht⟩ := h2
     have h3 := Typed.var_typing_captures hy
