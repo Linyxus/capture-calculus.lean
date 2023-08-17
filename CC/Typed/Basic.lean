@@ -11,6 +11,34 @@ import CC.Subtype.Basic
 
 namespace CC
 
+lemma LetC.subst_hole
+  (h : LetC t Ct u C) :
+  ∃ C', LetC t' Ct' u C' := by
+  cases h with
+  | normal =>
+    apply Exists.intro
+    constructor; aesop
+  | gc =>
+    apply Exists.intro
+    apply normal
+    constructor; aesop
+
+lemma LetC.subst_hole1
+  (h : LetC t Ct Cu C) :
+  ∃ C', LetC t' Ct' (CaptureSet.weaken_var1 Cu) C' := by
+  cases h with
+  | normal =>
+    apply Exists.intro
+    constructor
+    unfold CaptureSet.weaken_var1
+    apply DropBinder.rename; aesop
+  | gc =>
+    apply Exists.intro
+    apply normal
+    constructor
+    unfold CaptureSet.weaken_var1
+    apply DropBinderFree.rename; aesop
+
 theorem Typed.var_inv_subcapt' : 
   t0 = Term.var x ->
   T0 = CType.capt C S ->
@@ -156,52 +184,29 @@ theorem Typed.let_inv' :
     LetHole1 Γ u T U := by
   intro he h
   induction h <;> try (solve | cases he)
-  case letval1 =>
+  case letval =>
     cases he
     repeat apply Exists.intro
     repeat (apply And.intro; (first | assumption | apply Subtype.refl))
     apply And.intro
     · intros Ct' t' Ht'
+      rename_i hc _ _
+      have hc' := hc.subst_hole (t' := t') (Ct' := Ct')
+      cases hc'; rename_i hc'
       constructor
-      apply Typed.letval1 <;> try assumption
+      apply Typed.letval <;> try assumption
     · intros Ct' t' P Ht'
+      rename_i hc _ _
+      have hc' := LetC.subst_hole1 (t' := t') (Ct' := Ct') hc; cases hc'
       apply Exists.intro
-      apply Typed.letval1
+      apply Typed.letval
       exact Ht'
       rw [<- SepDegree.empty_weaken_var]
       apply Typed.weaken_var1
       trivial
       subst_vars
       simp [CType.weaken_var1_weaken_var]
-      unfold CaptureSet.weaken_var1
-      apply DropBinder.rename
-      assumption
-  case letval2 =>
-    cases he
-    repeat apply Exists.intro
-    repeat (apply And.intro; (first | assumption | apply Subtype.refl))
-    apply And.intro
-    · intros Ct' t' Ht'
-      constructor
-      apply Typed.letval1
-      assumption
-      assumption
-      assumption
-      constructor
-      assumption
-    · intros Ct' t' P Ht'
-      apply Exists.intro
-      apply Typed.letval1
-      exact Ht'
-      rw [<- SepDegree.empty_weaken_var]
-      apply Typed.weaken_var1
       trivial
-      subst_vars
-      simp [CType.weaken_var1_weaken_var]
-      apply DropBinder.drop_free
-      unfold CaptureSet.weaken_var1
-      apply DropBinderFree.rename
-      assumption
   case sub hsub ih =>
     let ⟨Ct, Cu, T, U0, U1, h1, h2, heq, hs, hh, hh1⟩ := ih he
     repeat apply Exists.intro
