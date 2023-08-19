@@ -83,6 +83,8 @@ theorem SepDegree.rename_empty :
 
 theorem mem_def {x : Fin n} {C : CaptureSet n} : x ∈ C ↔ x ∈ C.1 := Iff.rfl
 
+theorem singleton_def {x : Fin n} : ({x} : CaptureSet n).elems = {x} := rfl
+
 theorem mem_rename_of_mem (f : VarMap n1 n2) {C : CaptureSet n1} (h : x ∈ C) : f x ∈ C.rename f := by
   unfold CaptureSet.rename
   simp [mem_def]
@@ -145,6 +147,18 @@ lemma CaptureSet.val_eq {C1 C2 : CaptureSet n}
 lemma CaptureSet.val_def :
   ({ elems := xs, rdr := b1, cap := b2 } : CaptureSet n).elems = xs := rfl
 
+lemma CaptureSet.elems_val_eq {C1 C2 : CaptureSet n}
+  (he : C1 = C2) :
+  C1.elems = C2.elems := by aesop
+
+lemma CaptureSet.cap_val_eq {C1 C2 : CaptureSet n}
+  (he : C1 = C2) :
+  C1.cap = C2.cap := by aesop
+
+@[simp]
+lemma CaptureSet.cap_val_def :
+  ({ elems := xs, rdr := b1, cap := b2 } : CaptureSet n).cap = b2 := rfl
+
 lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
   (h : x ∈ (C1 ∪ C2).elems) :
   x ∈ C1.elems ∨ x ∈ C2.elems := by
@@ -166,3 +180,46 @@ lemma SepDegree.empty_weaken_var1 :
 
 lemma SepDegree.empty_weaken_var :
   ({} : SepDegree n).weaken_var = {} := by simp [weaken_var]
+
+@[simp]
+lemma CaptureSet.rdrSet_rdrSet (C : CaptureSet n) :
+  C.rdrSet.rdrSet = C.rdrSet := by
+  cases C; simp [CaptureSet.rdrSet]
+
+@[simp]
+lemma CaptureSet.mem_singleton
+  {x : Fin n} :
+  x ∈ ({y} : CaptureSet n) ↔ x = y := by
+  simp [mem_def] at *
+  simp [singleton_def] at *
+
+lemma CaptureSet.singleton_def' (x : Fin n) :
+  ({x} : CaptureSet n) = { elems := {x}, rdr := false, cap := false } := by
+  rfl
+
+lemma CaptureSet.empty_def :
+  (∅ : CaptureSet n) = { elems := ∅, rdr := false, cap := false } := by
+  rfl
+
+@[simp]
+lemma CaptureSet.singleton_rdrSet (x : Fin n) :
+  ({x} : CaptureSet n).rdrSet = ∅ := by
+  rw [CaptureSet.singleton_def', rdrSet]
+  simp [empty_def]
+
+@[simp]
+lemma CaptureSet.empty_rdrSet :
+  ({} : CaptureSet n).rdrSet = ∅ := by
+  simp [empty_def, rdrSet]
+
+@[simp]
+lemma CaptureSet.empty_capSet :
+  ({} : CaptureSet n).capSet = ∅ := by
+  simp [empty_def, capSet]
+
+lemma CaptureSet.singleton_eq_empty_absurd :
+  ({x} : CaptureSet n) = { elems := {}, rdr := b1, cap := b2 } → False := by
+  rw [singleton_def']
+  intros he
+  have he1 := CaptureSet.elems_val_eq he
+  rw [val_def] at he1; simp [val_def] at he1
