@@ -7,6 +7,10 @@ import CC.Type
 
 namespace CC
 
+inductive LetMode : Type where
+| par : LetMode
+| seq : LetMode
+
 inductive Term : Nat -> Nat -> Type where
 | var : Fin n -> Term n m
 | abs : SepDegree n -> CType n m -> Term n.succ m -> Term n m
@@ -15,7 +19,7 @@ inductive Term : Nat -> Nat -> Type where
 | tapp : Fin n -> PType n m -> Term n m
 | box : Fin n -> Term n m
 | unbox : CaptureSet n -> Fin n -> Term n m
-| letval : Term n m -> Term n.succ m -> Term n m
+| letval : LetMode -> Term n m -> Term n.succ m -> Term n m
 | letvar : SepDegree n -> Fin n -> Term n.succ m -> Term n m
 | reader : Fin n -> Term n m
 | read : Fin n -> Term n m
@@ -30,7 +34,7 @@ def Term.rename (t : Term n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : Term n2
   | Term.tapp x S => Term.tapp (f x) (S.rename f g)
   | Term.box x => Term.box (f x)
   | Term.unbox C x => Term.unbox (C.rename f) (f x)
-  | Term.letval t u => Term.letval (t.rename f g) (u.rename f.ext g)
+  | Term.letval m t u => Term.letval m (t.rename f g) (u.rename f.ext g)
   | Term.letvar D x t => Term.letvar (D.rename f) (f x) (t.rename f.ext g)
   | Term.reader x => Term.reader (f x)
   | Term.read x => Term.read (f x)

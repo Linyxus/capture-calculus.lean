@@ -157,31 +157,33 @@ theorem Typed.unbox_inv :
     Typed Γ (Term.var x) Cx (CType.capt Cf (PType.boxed U)) := by apply Typed.unbox_inv'; aesop
 
 def LetHole 
-  (Γ : Ctx n m) 
+  (Γ : Ctx n m)
+  (M : LetMode)
   (u : Term n.succ m)
   (T : CType n m) (U : CType n m) : Prop :=
   ∀ Ct' t',
     Typed Γ t' Ct' T ->
-    ∃ C', Typed Γ (Term.letval t' u) C' U
+    ∃ C', Typed Γ (Term.letval M t' u) C' U
 
 def LetHole1
   (Γ : Ctx n m) 
+  (M : LetMode)
   (u : Term n.succ m)
   (T : CType n m) (U : CType n m) : Prop :=
   ∀ Ct' t' P,
     Typed (Ctx.extend_var Γ {} P) t' Ct' T.weaken_var ->
-    ∃ C', Typed (Ctx.extend_var Γ {} P) (Term.letval t' u.weaken_var1) C' U.weaken_var
+    ∃ C', Typed (Ctx.extend_var Γ {} P) (Term.letval M t' u.weaken_var1) C' U.weaken_var
 
 theorem Typed.let_inv' :
-  t0 = Term.letval t u ->
+  t0 = Term.letval M t u ->
   Typed Γ t0 C0 U ->
   ∃ Ct Cu T U0 U1,
     Typed Γ t Ct T ∧
     Typed (Ctx.extend_var Γ {} T) u Cu U0 ∧
     U0 = CType.weaken_var U1 ∧
     Subtype Γ U1 U ∧
-    LetHole Γ u T U ∧
-    LetHole1 Γ u T U := by
+    LetHole Γ M u T U ∧
+    LetHole1 Γ M u T U := by
   intro he h
   induction h <;> try (solve | cases he)
   case letval =>
@@ -227,13 +229,13 @@ theorem Typed.let_inv' :
       · apply Subtype.weaken_var; trivial
 
 theorem Typed.let_inv :
-  Typed Γ (Term.letval t u) C0 U ->
+  Typed Γ (Term.letval M t u) C0 U ->
   ∃ Ct Cu T U0 U1,
     Typed Γ t Ct T ∧
     Typed (Ctx.extend_var Γ {} T) u Cu U0 ∧
     U0 = CType.weaken_var U1 ∧
     Subtype Γ U1 U ∧
-    LetHole Γ u T U ∧ LetHole1 Γ u T U := by
+    LetHole Γ M u T U ∧ LetHole1 Γ M u T U := by
   intro h
   apply let_inv' <;> trivial
 

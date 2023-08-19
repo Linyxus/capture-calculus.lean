@@ -28,16 +28,16 @@ inductive Reduce : State n -> State n' -> Prop where
   LookupStore γ x ⟨Term.box y, pv⟩ ->
   Reduce ⟨γ, Term.unbox C x⟩ ⟨γ, Term.var y⟩
 | red_rename :
-  Reduce ⟨γ, Term.letval (Term.var x) t⟩ ⟨γ, t.open_var x⟩ 
+  Reduce ⟨γ, Term.letval m (Term.var x) t⟩ ⟨γ, t.open_var x⟩ 
 | red_liftval :
   (v : Value t) ->
-  Reduce ⟨γ, Term.letval t u⟩ ⟨Store.cons γ ⟨t, v⟩, u⟩ 
+  Reduce ⟨γ, Term.letval m t u⟩ ⟨Store.cons γ ⟨t, v⟩, u⟩ 
 | red_ctx1 :
   Reduce ⟨γ, t⟩ ⟨γ, t'⟩ ->
-  Reduce ⟨γ, Term.letval t u⟩ ⟨γ, Term.letval t' u⟩
+  Reduce ⟨γ, Term.letval m t u⟩ ⟨γ, Term.letval m t' u⟩
 | red_ctx2 :
   Reduce ⟨γ, t⟩ ⟨Store.cons γ v, t'⟩ ->
-  Reduce ⟨γ, Term.letval t u⟩ ⟨Store.cons γ v, Term.letval t' u.weaken_var1⟩
+  Reduce ⟨γ, Term.letval m t u⟩ ⟨Store.cons γ v, Term.letval m t' u.weaken_var1⟩
 
 inductive TypedState : State n -> Ctx n 0 -> CType n 0 -> Prop where
 | state :

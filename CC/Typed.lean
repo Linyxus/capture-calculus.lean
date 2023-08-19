@@ -62,7 +62,7 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
   Typed (Ctx.extend_var Γ {} T) u Cu U ->
   U = U'.weaken_var ->
   LetC t Ct Cu Cu' ->
-  Typed Γ (Term.letval t u) Cu' U'
+  Typed Γ (Term.letval m t u) Cu' U'
 
 -- The following provides a function that computes the capture set defined by DropBinder.
 -- They are currently unused, therefore commented and unported.
