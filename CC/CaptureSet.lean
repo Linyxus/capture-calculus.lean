@@ -223,3 +223,5 @@ lemma CaptureSet.singleton_eq_empty_absurd :
   intros he
   have he1 := CaptureSet.elems_val_eq he
   rw [val_def] at he1; simp [val_def] at he1
+
+def SepDegree.as_cset (D : SepDegree n) : CaptureSet n := { elems := D.elems, rdr := false, cap := false }
