@@ -22,8 +22,7 @@ inductive Sep : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
   y ∈ D ->
   Sep Γ {x} {y} 
 | degree_uniq :
-  BoundVar Γ x D T ->
-  D.isUniq ->
+  BoundVar Γ x SepDegree.uniq T ->
   x ≠ y ->
   Sep Γ {x} {y}
 | var :

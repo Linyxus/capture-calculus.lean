@@ -150,6 +150,8 @@ lemma Sep.narrow_cap'
     apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
   case reader =>
     apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
+  case degree_uniq =>
+    apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
 
 lemma Sep.narrow_cap
   (h : Sep Γ cap C2) :
@@ -183,6 +185,8 @@ lemma Sep.rdr_spec' (h : Sep Γ C1 C2) : rdr_spec_motive Γ C1 C2 := by
   case degree =>
     apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
   case reader =>
+    apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
+  case degree_uniq =>
     apply And.intro <;> (intros he C; exfalso; apply CaptureSet.singleton_eq_empty_absurd he)
 
 lemma Sep.rdr_spec
