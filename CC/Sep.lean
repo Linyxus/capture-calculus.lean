@@ -14,15 +14,18 @@ inductive Sep : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
   Sep Γ C2 C1
 | set :
   (∀ x, x ∈ C1 -> Sep Γ {x} C2) ->
-  Sep Γ C1.rdrSet C2 ->
-  Sep Γ C1.capSet C2 ->
+  (C1.hasRdr -> Sep Γ rdr C2) ->
+  (C1.hasCap -> Sep Γ cap C2) ->
   Sep Γ C1 C2
-| empty :
-  Sep Γ {} C
 | degree :
   BoundVar Γ x D T ->
   y ∈ D ->
   Sep Γ {x} {y} 
+| degree_uniq :
+  BoundVar Γ x D T ->
+  D.isUniq ->
+  x ≠ y ->
+  Sep Γ {x} {y}
 | var :
   BoundVar Γ x D (CType.capt C S) ->
   Sep Γ C C' ->

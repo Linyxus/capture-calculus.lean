@@ -9,8 +9,13 @@ structure CaptureSet (n : Nat) where
   rdr : Bool
   cap : Bool
 
+-- inductive SepDegree (n : Nat) where
+-- | elems : Finset (Fin n) -> SepDegree n
+-- | uniq : SepDegree n
+
 structure SepDegree (n : Nat) where
   elems : Finset (Fin n)
+  uniq  : Bool
 
 def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
   { elems := {}, rdr := C.rdr, cap := false }
@@ -18,10 +23,21 @@ def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
 def CaptureSet.capSet (C : CaptureSet n) : CaptureSet n :=
   { elems := {}, rdr := false, cap := C.cap }
 
-def singletonRdr : CaptureSet n :=
+def CaptureSet.hasRdr (C : CaptureSet n) : Prop :=
+  C.rdr = true
+
+def CaptureSet.hasCap (C : CaptureSet n) : Prop :=
+  C.cap = true
+
+def SepDegree.isUniq (D : SepDegree n) : Prop :=
+  D.uniq = true
+
+@[simp]
+def rdr : CaptureSet n :=
   { elems := {}, rdr := true, cap := false }
 
-def singletonCap : CaptureSet n :=
+@[simp]
+def cap : CaptureSet n :=
   { elems := {}, rdr := false, cap := true }
 
 instance : Membership (Fin n) (CaptureSet n) :=
@@ -40,19 +56,19 @@ instance : Membership (Fin n) (SepDegree n) :=
   ⟨fun a s => a ∈ s.1⟩
 
 instance : Singleton (Fin n) (SepDegree n) :=
-  ⟨fun x => ⟨{x}⟩⟩
+  ⟨fun x => ⟨{x}, false⟩⟩
 
 instance : Union (SepDegree n) :=
-  ⟨fun s t => ⟨s.1 ∪ t.1⟩⟩
+  ⟨fun s t => ⟨s.1 ∪ t.1, s.2 || t.2⟩⟩
 
 instance : EmptyCollection (SepDegree n) :=
-  ⟨⟨{}⟩⟩
+  ⟨⟨{}, false⟩⟩
 
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
   ⟨C.elems.image f, C.rdr, C.cap⟩
 
 def SepDegree.rename (C : SepDegree n1) (f : VarMap n1 n2) : SepDegree n2 :=
-  ⟨C.elems.image f⟩
+  ⟨C.elems.image f, C.uniq⟩
   
 def CaptureSet.weaken_var (C : CaptureSet n) : CaptureSet n.succ :=
   C.rename weaken_map
@@ -225,3 +241,15 @@ lemma CaptureSet.singleton_eq_empty_absurd :
   rw [val_def] at he1; simp [val_def] at he1
 
 def SepDegree.as_cset (D : SepDegree n) : CaptureSet n := { elems := D.elems, rdr := false, cap := false }
+
+lemma CaptureSet.singleton_hasRdr_absurd {x : Fin n} :
+  ({x} : CaptureSet n).hasRdr → False := by simp [CaptureSet.hasRdr]
+
+lemma CaptureSet.singleton_hasCap_absurd {x : Fin n} :
+  ({x} : CaptureSet n).hasCap → False := by simp [CaptureSet.hasCap]
+
+lemma cap_hasCap :
+  (cap : CaptureSet n).hasCap := by simp [CaptureSet.hasCap]
+
+lemma rdr_hasRdr :
+  (rdr : CaptureSet n).hasRdr := by simp [CaptureSet.hasRdr]
