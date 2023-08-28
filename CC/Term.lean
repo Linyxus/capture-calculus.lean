@@ -13,7 +13,7 @@ inductive LetMode : Type where
 
 inductive Term : Nat -> Nat -> Type where
 | var : Fin n -> Term n m
-| abs : SepDegree n -> CType n m -> Term n.succ m -> Term n m
+| abs : Finset (Fin n) -> CType n m -> Term n.succ m -> Term n m
 | app : Fin n -> Fin n -> Term n m
 | tabs : PType n m -> Term n m.succ -> Term n m
 | tapp : Fin n -> PType n m -> Term n m
@@ -28,7 +28,7 @@ inductive Term : Nat -> Nat -> Type where
 def Term.rename (t : Term n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : Term n2 m2 :=
   match t with
   | Term.var x => Term.var (f x)
-  | Term.abs D T t => Term.abs (D.rename f) (T.rename f g) (t.rename f.ext g)
+  | Term.abs D T t => Term.abs (D.image f) (T.rename f g) (t.rename f.ext g)
   | Term.app x y => Term.app (f x) (f y)
   | Term.tabs S t => Term.tabs (S.rename f g) (t.rename f g.ext)
   | Term.tapp x S => Term.tapp (f x) (S.rename f g)

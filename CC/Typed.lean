@@ -45,7 +45,7 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
   Subtype Γ T T' ->
   Typed Γ t C T'
 | abs :
-  Typed (Ctx.extend_var Γ D T) t C U ->
+  Typed (Ctx.extend_var Γ (SepDegree.elems D) T) t C U ->
   DropBinder C C' ->
   Typed Γ (Term.abs D T t) C' (CType.capt C' (PType.arr D T U))
 | tabs :
@@ -54,7 +54,7 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | app :
   Typed Γ (Term.var x) Cx (CType.capt C (PType.arr D T U)) ->
   Typed Γ (Term.var y) Cy T ->
-  Sep Γ {y} D.as_cset ->
+  Sep Γ {y} { elems := D, cap := false, rdr := false } ->
   Typed Γ (Term.app x y) (Cx ∪ Cy) (U.open_var y)
 | tapp :
   Typed Γ (Term.var x) Cx (CType.capt C (PType.tarr S T)) ->
