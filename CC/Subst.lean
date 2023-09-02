@@ -27,13 +27,18 @@ theorem Typed.var_bound_type :
   Typed Γ (Term.var x) {x} T := by
   intro hb
   cases T
-  apply Typed.sub
-  apply Typed.var
-  trivial
-  apply Subtype.capt
-  apply Subcapt.sc_var
-  exact hb
-  constructor
+  case capt =>
+    apply Typed.sub
+    apply Typed.var
+    trivial
+    apply Subtype.capt
+    apply Subcapt.sc_var
+    exact hb
+    constructor
+  case cap =>
+    rw [<- CType.at_cap]
+    apply Typed.var
+    assumption
 
 def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
   VarSubst (Ctx.extend_var Γ P) (Ctx.extend_var Δ (P.rename f id)) f.ext := by

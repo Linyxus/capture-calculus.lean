@@ -11,16 +11,6 @@ import CC.Subcapt
 
 namespace CC
 
-def NonRoot.rename (h : NonRoot Γ S) 
-  (δ : TVarRename Γ Δ f g) :
-  NonRoot Δ (S.rename f g) := by
-  induction h <;> try (solve | simp [PType.rename]; constructor)
-  case tvar hb _ ih =>
-    simp [PType.rename]
-    constructor
-    apply δ hb
-    assumption
-
 def Subcapt.rename (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (C1.rename f) (C2.rename f) := by
   intro h
   induction h
@@ -32,13 +22,12 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) : Subc
     simp
     apply Subcapt.sc_elem
     apply mem_rename_of_mem; assumption
-  case sc_var h hr =>
+  case sc_var h =>
     simp
     apply Subcapt.sc_var
     have H := σ h
     simp at H
     assumption
-    apply hr.rename; trivial
   case sc_set hs =>
     apply Subcapt.sc_set
     intro x1 h1

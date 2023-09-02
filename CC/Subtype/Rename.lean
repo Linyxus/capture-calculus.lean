@@ -32,6 +32,8 @@ def SubtypeP.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : PType n1 m1}
     constructor
     apply Subcapt.rename <;> aesop
     aesop
+  case cap =>
+    intros; simp [CType.rename]; constructor
   case refl =>
     intros
     constructor
@@ -75,10 +77,11 @@ def Subtype.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : CType n1 m1}
   (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) :
   Subtype Δ (T1.rename f g) (T2.rename f g) := by
   cases h
-  simp
-  apply Subtype.capt
-  apply Subcapt.rename <;> aesop
-  apply SubtypeP.rename <;> aesop
+  case capt => 
+    simp; apply Subtype.capt
+    apply Subcapt.rename <;> aesop
+    apply SubtypeP.rename <;> aesop
+  case cap => simp [CType.rename]; constructor
 
 def Subtype.weaken_var (h : Subtype Γ T1 T2) P :
   Subtype (Ctx.extend_var Γ P) T1.weaken_var T2.weaken_var :=

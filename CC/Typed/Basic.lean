@@ -20,19 +20,23 @@ theorem Typed.var_inv_subcapt' :
   induction h 
   case var =>
     cases eq1
+    rename_i T0 _
+    cases T0 <;> try (solve | cases eq2)
     cases eq2
     apply Subcapt.refl
   case sub ih =>
     rename_i T T' _ _
     cases T
-    have ih := ih eq1 rfl
-    rename_i hsub _
-    cases hsub
-    rename_i hsub _
-    cases eq2
-    apply Subcapt.sc_trans
-    exact ih
-    aesop
+    case capt =>
+      have ih := ih eq1 rfl
+      rename_i hsub _
+      cases hsub
+      rename_i hsub _
+      cases eq2
+      apply Subcapt.sc_trans
+      exact ih
+      aesop
+    case cap => rename_i hs; cases hs; cases eq2
   all_goals cases eq1
 
 theorem Typed.var_inv_subcapt :
@@ -238,7 +242,9 @@ theorem Typed.var_typing_bound' :
   intro he1 he2 h
   induction h <;> try (solve | cases he1 | cases he2)
   case var hb =>
-    cases he1; cases he2
+    cases he1
+    rename_i T0; cases T0 <;> try (solve | cases he2)
+    cases he2
     repeat (apply Exists.intro)
     apply And.intro
     exact hb
@@ -246,13 +252,15 @@ theorem Typed.var_typing_bound' :
   case sub T _ h hsub ih =>
     cases he1; cases he2
     cases T
-    have ih := ih rfl rfl
-    let ⟨C', S, hb, hsub0⟩ := ih
-    repeat (apply Exists.intro)
-    apply And.intro
-    exact hb
-    cases hsub
-    apply SubtypeP.trans <;> trivial
+    case capt =>
+      have ih := ih rfl rfl
+      let ⟨C', S, hb, hsub0⟩ := ih
+      repeat (apply Exists.intro)
+      apply And.intro
+      exact hb
+      cases hsub
+      apply SubtypeP.trans <;> trivial
+    case cap => cases hsub
 
 theorem Typed.var_typing_bound :
   Typed Γ (Term.var x) Cx (CType.capt C S) ->

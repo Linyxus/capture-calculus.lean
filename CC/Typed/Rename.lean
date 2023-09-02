@@ -40,6 +40,7 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   induction h generalizing n2 m2 Δ
   case var =>
     simp [Term.rename]
+    simp [CType.rename_at]
     apply Typed.var
     rename_i hb
     have hb' := σ hb

@@ -17,16 +17,21 @@ namespace CC
 theorem Subtype.refl :
   Subtype Γ T T := by
   cases T
-  constructor
-  apply Subcapt.refl
-  apply SubtypeP.refl
+  case capt =>
+    constructor
+    apply Subcapt.refl
+    apply SubtypeP.refl
+  case cap => constructor
 
 theorem Subtype.trans
   (h1 : Subtype Γ T1 T2)
   (h2 : Subtype Γ T2 T3) :
   Subtype Γ T1 T3 := by
   cases h1
-  cases h2
-  constructor
-  apply Subcapt.sc_trans <;> trivial
-  apply SubtypeP.trans <;> trivial
+  case capt =>
+    cases h2
+    case capt =>
+      constructor
+      apply Subcapt.sc_trans <;> trivial
+      apply SubtypeP.trans <;> trivial
+  case cap => cases h2; constructor

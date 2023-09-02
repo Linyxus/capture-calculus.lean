@@ -22,11 +22,21 @@ def Typed.tsubst {Δ : Ctx n m2}
   (δ : TVarSubst Γ Δ g) :
   Typed Δ (t.tsubst g) C (T.tsubst g) := by
   induction h generalizing m2
-  case var hb =>
-    simp [Term.tsubst, CType.tsubst]
-    have hb' := σ hb
-    simp [CType.tsubst] at hb'
-    constructor; trivial
+  case var T0 hb =>
+    cases T0
+    case capt =>
+      simp [Term.tsubst, CType.tsubst]
+      have hb' := σ hb
+      simp [CType.tsubst] at hb'
+      simp [CType.at]
+      rw [<- CType.at_capt]
+      apply Typed.var
+      trivial
+    case cap => 
+      simp [CType.at, CType.tsubst]; rw [<- CType.at_cap]; apply Typed.var
+      have hb' := σ hb
+      simp [CType.tsubst] at hb'
+      assumption
   case sub ih =>
     apply Typed.sub
     apply ih <;> trivial

@@ -32,6 +32,7 @@ def SubtypeP.subst (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
     apply Subtype.capt
     apply Subcapt.subst <;> aesop
     aesop
+  case cap => intros; simp [CType.rename]; constructor
   case refl =>
     intros; constructor
   case trans =>
@@ -71,7 +72,7 @@ def SubtypeP.subst (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
 
 def Subtype.subst (h : Subtype Γ T1 T2) (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
   Subtype Δ (T1.rename f id) (T2.rename f id) := by
-  cases h
+  cases h <;> try (solve | simp [CType.rename]; constructor)
   constructor
   apply Subcapt.subst <;> aesop
   apply SubtypeP.subst <;> aesop
