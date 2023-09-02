@@ -7,6 +7,20 @@ import CC.Type
 
 namespace CC
 
+inductive NonRoot : Ctx n m -> PType n m -> Prop where
+| tvar :
+  BoundTVar Γ X S ->
+  NonRoot Γ S ->
+  NonRoot Γ (PType.tvar X)
+| top :
+  NonRoot Γ (PType.top)
+| arr :
+  NonRoot Γ (PType.arr T U)
+| tarr :
+  NonRoot Γ (PType.tarr T U)
+| boxed :
+  NonRoot Γ (PType.boxed T)
+
 inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_trans :
   Subcapt Γ C1 C2 ->
@@ -17,6 +31,7 @@ inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
   Subcapt Γ {x} C
 | sc_var :
   BoundVar Γ x (CType.capt C S) ->
+  NonRoot Γ S ->
   Subcapt Γ {x} C
 | sc_set :
   (∀ x, x ∈ C1 -> Subcapt Γ {x} C2) ->

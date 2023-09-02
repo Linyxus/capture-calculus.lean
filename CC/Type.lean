@@ -11,6 +11,7 @@ inductive PType : Nat -> Nat -> Type where
 | arr   : CType n m -> CType n.succ m -> PType n m
 | tarr  : PType n m -> CType n m.succ -> PType n m
 | boxed : CType n m -> PType n m
+| root : PType n m
 
 inductive CType : Nat -> Nat -> Type where
 | capt :
@@ -24,6 +25,7 @@ def PType.rename (S : PType n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : PType
   match S with
   | PType.tvar x => PType.tvar (g x)
   | PType.top => PType.top
+  | PType.root => PType.root
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => 
     PType.arr (CType.capt (C1.rename f) (S1.rename f g)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
   | PType.tarr S (CType.capt C R) => 
@@ -89,6 +91,7 @@ theorem rename_boxed :
 theorem PType.rename_id : (S : PType n m) -> S.rename id id = S
 | PType.tvar x => by simp [PType.rename]
 | PType.top => by simp [PType.rename]
+| PType.root => by simp [PType.rename]
 | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
   simp [PType.rename]
   have ih1 := PType.rename_id S1
@@ -117,6 +120,7 @@ theorem PType.rename_comp
   unfold VarMap.comp
   simp [PType.rename]
 | PType.top => by simp [PType.rename]
+| PType.root => by simp [PType.rename]
 | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
@@ -144,6 +148,7 @@ def PType.open_tvar_rec (S : PType n m) (R : PType n m) (k : Fin m) : PType n m 
   match S with
   | PType.tvar x => if x = k then R else S
   | PType.top => PType.top
+  | PType.root => PType.root
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) =>
     PType.arr (CType.capt C1 (S1.open_tvar_rec R k)) (CType.capt C2 (S2.open_tvar_rec R.weaken_var k))
   | PType.tarr S1 (CType.capt C2 S2) =>

@@ -9,6 +9,7 @@ def PType.tsubst (S : PType n m1) (σ : TypeMap n m1 m2) : PType n m2 :=
   match S with
   | PType.tvar X => σ X
   | PType.top => PType.top
+  | PType.root => PType.root
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) =>
     PType.arr (CType.capt C1 (S1.tsubst σ)) (CType.capt C2 (S2.tsubst σ.ext_var))
   | PType.tarr S1 (CType.capt C2 S2) =>
@@ -33,6 +34,8 @@ theorem PType.rename_tsubst (T : PType n1 m1)
   | PType.tvar X => by
     simp [tsubst, rename, TypeMap.then]
   | PType.top => by
+    simp [tsubst, rename, TypeMap.then]
+  | PType.root => by
     simp [tsubst, rename, TypeMap.then]
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.rename_tsubst S1 (σ := σ) (f := f) (g := g)
@@ -63,6 +66,8 @@ theorem PType.tsubst_rename (T : PType n1 m1)
   | PType.tvar X => by
     simp [tsubst, rename, TypeMap.compv]
   | PType.top => by
+    simp [tsubst, rename, TypeMap.compv]
+  | PType.root => by
     simp [tsubst, rename, TypeMap.compv]
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.tsubst_rename S1 (f := f) (g := g) (σ := σ)
@@ -167,6 +172,7 @@ lemma PType.tsubst_id (P : PType n m1) :
   match P with
   | PType.tvar X => by simp [tsubst, TypeMap.id]
   | PType.top => by simp [tsubst]
+  | PType.root => by simp [tsubst]
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => by
     have ih1 := PType.tsubst_id S1
     have ih2 := PType.tsubst_id S2
@@ -240,6 +246,8 @@ lemma PType.tsubst_comp (T : PType n m1) (g1 : TypeMap n m1 m2) (g2 : TypeMap n 
     simp [TypeMap.ext_tvar_comp]
     simp [ih2]
   | PType.top => by
+    simp [tsubst, TypeMap.map]
+  | PType.root => by
     simp [tsubst, TypeMap.map]
   | PType.boxed (CType.capt C1 S1) => by
     have ih := PType.tsubst_comp S1 g1 g2
