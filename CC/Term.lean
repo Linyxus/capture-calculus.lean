@@ -61,6 +61,9 @@ def Term.weaken_var (t : Term n m) : Term n.succ m :=
 def Term.weaken_var1 (t : Term (Nat.succ n) m) : Term n.succ.succ m :=
   t.rename weaken_map.ext id
 
+def Term.weaken_var_n (t : Term n m) (k : Nat) : Term (n + k) m :=
+  t.rename (weaken_n_map k) id
+
 def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
   t.rename id weaken_map
 
@@ -70,8 +73,14 @@ def Term.open_var (t : Term n.succ m) (x : Fin n) : Term n m :=
 def Value.weaken_var {t : Term n m} (v : Value t) : Value (Term.weaken_var t) :=
   v.rename weaken_map id
 
+def Value.weaken_var_n {t : Term n m} (v : Value t) (k : Nat) : Value (Term.weaken_var_n t k) :=
+  v.rename (weaken_n_map k) id
+
 def Val.weaken_var (v : Val n m) : Val n.succ m :=
   { t := v.t.weaken_var, isVal := v.isVal.weaken_var }
+
+def Val.weaken_var_n (v : Val n m) (k : Nat) : Val (n + k) m :=
+  { t := v.t.weaken_var_n k, isVal := v.isVal.weaken_var_n k }
 
 def Term.rename_id (t : Term n m) : t.rename id id = t := by
   induction t <;> try (solve | simp [rename] | simp [rename]; aesop)

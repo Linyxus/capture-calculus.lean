@@ -28,17 +28,24 @@ inductive Store : Nat -> Type where
   Val n 0 ->
   Store n
 
-inductive Focus : Term n 0 -> Term n' 0 -> Type where
-| this : (t : Term n 0) -> Focus t t
-| val_left : ∀ {t : Term n 0} {t' : Term n' 0},
-  (M : LetMode) ->
-  Focus t t' ->
-  (u : Term n.succ 0) ->
-  Focus (Term.letval M t u) t'
-| val_right : ∀ {u : Term (Nat.succ n) 0} {u' : Term n' 0},
-  (t : Term n 0) ->
-  Focus u u' ->
-  Focus (Term.letval LetMode.par t u) u'
+inductive Pool : Nat -> Nat -> Type where
+| none : Pool n 0
+| cons :
+  Pool n k ->
+  Term (n+k) 0 ->
+  Pool n k.succ
+
+-- inductive Focus : Term n 0 -> Term n' 0 -> Type where
+-- | this : (t : Term n 0) -> Focus t t
+-- | val_left : ∀ {t : Term n 0} {t' : Term n' 0},
+--   (M : LetMode) ->
+--   Focus t t' ->
+--   (u : Term n.succ 0) ->
+--   Focus (Term.letval M t u) t'
+-- | val_right : ∀ {u : Term (Nat.succ n) 0} {u' : Term n' 0},
+--   (t : Term n 0) ->
+--   Focus u u' ->
+--   Focus (Term.letval LetMode.par t u) u'
 
 inductive Store.LookupVal : Store n -> Fin n -> Val n 0 -> Prop where
 | here :
@@ -68,12 +75,12 @@ inductive Store.LookupVar : Store n -> Fin n -> Val n 0 -> Prop where
   Store.LookupVar γ x v ->
   Store.LookupVar (Store.set γ y v0) x v
 
--- inductive LookupStore : ∀ {n}, Store n -> Fin n -> Val n 0 -> Prop where
--- | here :
---   LookupStore (Store.cons γ v) 0 v.weaken_var
--- | there :
---   LookupStore γ x v ->
---   LookupStore (Store.cons γ v0) x.succ v.weaken_var
+-- -- inductive LookupStore : ∀ {n}, Store n -> Fin n -> Val n 0 -> Prop where
+-- -- | here :
+-- --   LookupStore (Store.cons γ v) 0 v.weaken_var
+-- -- | there :
+-- --   LookupStore γ x v ->
+-- --   LookupStore (Store.cons γ v0) x.succ v.weaken_var
 
 -- inductive TypedStore : Store n -> Ctx n m -> Prop where
 -- | empty :
@@ -87,6 +94,6 @@ inductive Store.LookupVar : Store n -> Fin n -> Val n 0 -> Prop where
 --   Typed Γ t C (CType.capt {} S) ->
 --   TypedStore (Store.var γ ⟨t, isVal⟩) (Ctx.extend_var Γ {})
 
--- lemma TypedStore.no_tvar {γ : Store n} {Γ : Ctx n m}
---   (h : TypedStore γ Γ) :
---   m = 0 := by induction h <;> rfl
+-- -- lemma TypedStore.no_tvar {γ : Store n} {Γ : Ctx n m}
+-- --   (h : TypedStore γ Γ) :
+-- --   m = 0 := by induction h <;> rfl
