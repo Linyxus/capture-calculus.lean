@@ -2,6 +2,7 @@
 import CC.CaptureSet
 import CC.Type
 import CC.Term
+import CC.Context
 
 -- Definitions: type system
 import CC.Subcapt
