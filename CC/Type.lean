@@ -8,7 +8,7 @@ mutual
 inductive PType : Nat -> Nat -> Type where
 | tvar   : Fin m -> PType n m
 | top    : PType n m
-| arr    : SepDegree n -> CType n m -> CType n.succ m -> PType n m
+| arr    : Finset (Fin n) -> CType n m -> CType n.succ m -> PType n m
 | tarr   : PType n m -> CType n m.succ -> PType n m
 | boxed  : CType n m -> PType n m
 | ref    : PType n m -> PType n m
@@ -27,7 +27,7 @@ def PType.rename (S : PType n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : PType
   | PType.tvar x => PType.tvar (g x)
   | PType.top => PType.top
   | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => 
-    PType.arr (D.rename f) (CType.capt (C1.rename f) (S1.rename f g)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
+    PType.arr (D.image f) (CType.capt (C1.rename f) (S1.rename f g)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
   | PType.tarr S (CType.capt C R) => 
     PType.tarr (S.rename f g) (CType.capt (C.rename f) (R.rename f g.ext))
   | PType.boxed (CType.capt C R) => PType.boxed (CType.capt (C.rename f) (R.rename f g))
@@ -72,7 +72,7 @@ theorem rename_capt :
 
 @[simp]
 theorem rename_arr :
-  (PType.arr D T1 T2).rename f g = PType.arr (D.rename f) (T1.rename f g) (T2.rename f.ext g) := by
+  (PType.arr D T1 T2).rename f g = PType.arr (D.image f) (T1.rename f g) (T2.rename f.ext g) := by
   cases T1
   cases T2
   simp [PType.rename]
@@ -129,10 +129,11 @@ theorem PType.rename_comp
 | PType.top => by simp [PType.rename]
 | PType.arr D (CType.capt C1 S1) (CType.capt C2 S2) => by
   simp [PType.rename]
-  simp [SepDegree.rename_comp]
+  simp [Finset.image_image]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
-  apply And.intro <;> apply PType.rename_comp
+  apply And.intro; simp [VarMap.comp]
+  apply And.intro <;> try apply PType.rename_comp
 | PType.tarr S (CType.capt C R) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]

@@ -14,6 +14,8 @@ def VarMap.comp (f : VarMap n2 n3) (f' : VarMap n1 n2) : VarMap n1 n3 := Functio
 
 def weaken_map : VarMap n n.succ := fun x => x.succ
 
+def weaken_n_map (k : Nat) : VarMap n (n+k) := fun x => Fin.addNat k x
+
 def open_map (k : Fin n) : VarMap n.succ n := by
   intro i
   cases i using Fin.cases with

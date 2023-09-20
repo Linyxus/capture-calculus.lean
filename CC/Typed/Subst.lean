@@ -93,29 +93,17 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     apply Typed.unbox
     simp [Term.rename] at ih'
     apply ih'
-  case letval1 ih1 ih2 => 
+  case letval ih1 ih2 => 
     simp [Term.rename]
     simp [CaptureSet.rename_union]
-    apply Typed.letval1
+    apply Typed.letval
     apply ih1 <;> trivial
     apply ih2
     apply VarSubst.ext_var; trivial
     apply TVarRename.ext_var; trivial
     subst_vars
     simp [CType.rename_weaken_comm]
-    apply DropBinder.rename; trivial
-  case letval2 ih1 ih2 =>
-    simp [Term.rename]
-    simp [CaptureSet.rename_union]
-    apply Typed.letval2
-    apply ih1 <;> trivial
-    apply Value.rename; trivial
-    apply ih2
-    apply VarSubst.ext_var; trivial
-    apply TVarRename.ext_var; trivial
-    subst_vars
-    simp [CType.rename_weaken_comm]
-    apply DropBinderFree.rename; trivial
+    apply LetC.rename; trivial
 
 def Typed.narrow_var
   (hsub : Subtype Γ T1 T2)

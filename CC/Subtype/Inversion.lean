@@ -17,43 +17,6 @@ import CC.Subtype.TypeSubst
 
 namespace CC
 
-def SubtypeP.tvar_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ X, 
-    S2 = PType.tvar X ->
-    SubtypeP Γ S1 S2 ->
-    ∃ Y, S1 = PType.tvar Y
-
-def SubtypeP.tvar_inv' :
-  SubtypeP Γ S1 S2 ->
-  SubtypeP.tvar_inv_motive Γ S1 S2 := by
-  intro h
-  apply SubtypeP.rec
-    (motive_1 := fun Γ T1 T2 _ => True)
-    (motive_2 := fun Γ S1 S2 _ => SubtypeP.tvar_inv_motive Γ S1 S2)
-    <;> try (solve | trivial | intros; trivial | intros; unfold tvar_inv_motive; intros _ he; cases he)
-  case refl =>
-    intros; unfold tvar_inv_motive
-    intros X he h
-    aesop
-  case trans =>
-    intros; unfold tvar_inv_motive at *
-    intros X he h
-    rename_i h1 h2 ih1 ih2
-    subst_vars
-    have ih2' := ih2 _ rfl h2
-    cases ih2'
-    subst_vars
-    apply ih1 <;> trivial
-  case tvar => 
-    intros; unfold tvar_inv_motive at *
-    aesop
-
-lemma SubtypeP.tvar_inv :
-  SubtypeP Γ S1 (PType.tvar X2) ->
-  ∃ X1, S1 = PType.tvar X1 := by
-  intro h
-  apply SubtypeP.tvar_inv' <;> trivial
-
 private def SubtypeP.fun_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
   ∀ D T U, 
     S2 = PType.arr D T U ->

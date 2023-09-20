@@ -7,15 +7,19 @@ import CC.Type
 
 namespace CC
 
+inductive LetMode : Type where
+| par : LetMode
+| seq : LetMode
+
 inductive Term : Nat -> Nat -> Type where
 | var : Fin n -> Term n m
-| abs : SepDegree n -> CType n m -> Term n.succ m -> Term n m
+| abs : Finset (Fin n) -> CType n m -> Term n.succ m -> Term n m
 | app : Fin n -> Fin n -> Term n m
 | tabs : PType n m -> Term n m.succ -> Term n m
 | tapp : Fin n -> PType n m -> Term n m
 | box : Fin n -> Term n m
 | unbox : CaptureSet n -> Fin n -> Term n m
-| letval : Term n m -> Term n.succ m -> Term n m
+| letval : LetMode -> Term n m -> Term n.succ m -> Term n m
 | letvar : SepDegree n -> Fin n -> Term n.succ m -> Term n m
 | reader : Fin n -> Term n m
 | read : Fin n -> Term n m
@@ -24,13 +28,13 @@ inductive Term : Nat -> Nat -> Type where
 def Term.rename (t : Term n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : Term n2 m2 :=
   match t with
   | Term.var x => Term.var (f x)
-  | Term.abs D T t => Term.abs (D.rename f) (T.rename f g) (t.rename f.ext g)
+  | Term.abs D T t => Term.abs (D.image f) (T.rename f g) (t.rename f.ext g)
   | Term.app x y => Term.app (f x) (f y)
   | Term.tabs S t => Term.tabs (S.rename f g) (t.rename f g.ext)
   | Term.tapp x S => Term.tapp (f x) (S.rename f g)
   | Term.box x => Term.box (f x)
   | Term.unbox C x => Term.unbox (C.rename f) (f x)
-  | Term.letval t u => Term.letval (t.rename f g) (u.rename f.ext g)
+  | Term.letval m t u => Term.letval m (t.rename f g) (u.rename f.ext g)
   | Term.letvar D x t => Term.letvar (D.rename f) (f x) (t.rename f.ext g)
   | Term.reader x => Term.reader (f x)
   | Term.read x => Term.read (f x)
@@ -57,6 +61,9 @@ def Term.weaken_var (t : Term n m) : Term n.succ m :=
 def Term.weaken_var1 (t : Term (Nat.succ n) m) : Term n.succ.succ m :=
   t.rename weaken_map.ext id
 
+def Term.weaken_var_n (t : Term n m) (k : Nat) : Term (n + k) m :=
+  t.rename (weaken_n_map k) id
+
 def Term.weaken_tvar (t : Term n m) : Term n m.succ :=
   t.rename id weaken_map
 
@@ -66,8 +73,14 @@ def Term.open_var (t : Term n.succ m) (x : Fin n) : Term n m :=
 def Value.weaken_var {t : Term n m} (v : Value t) : Value (Term.weaken_var t) :=
   v.rename weaken_map id
 
+def Value.weaken_var_n {t : Term n m} (v : Value t) (k : Nat) : Value (Term.weaken_var_n t k) :=
+  v.rename (weaken_n_map k) id
+
 def Val.weaken_var (v : Val n m) : Val n.succ m :=
   { t := v.t.weaken_var, isVal := v.isVal.weaken_var }
+
+def Val.weaken_var_n (v : Val n m) (k : Nat) : Val (n + k) m :=
+  { t := v.t.weaken_var_n k, isVal := v.isVal.weaken_var_n k }
 
 def Term.rename_id (t : Term n m) : t.rename id id = t := by
   induction t <;> try (solve | simp [rename] | simp [rename]; aesop)

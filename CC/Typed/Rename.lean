@@ -32,6 +32,17 @@ def DropBinder.rename (h : DropBinder C C') :
     rw [<- CaptureSet.rename_weaken_comm]
     apply DropBinder.drop
 
+def LetC.rename (h : LetC t Ct Cu C) :
+  LetC (t.rename f g) (Ct.rename f) (Cu.rename f.ext) (C.rename f) := by
+  cases h with
+  | normal =>
+    simp [CaptureSet.rename_union]; constructor
+    apply DropBinder.rename; trivial
+  | gc =>
+    apply LetC.gc
+    apply DropBinderFree.rename; trivial
+    apply Value.rename; trivial
+
 def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   {Δ : Ctx n2 m2}
   (σ : VarRename Γ Δ f g)
@@ -96,29 +107,18 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
     have ih' := ih σ δ
     simp [Term.rename] at ih'
     apply ih'
-  case letval1 => 
+  case letval => 
     simp [Term.rename]
     simp [CaptureSet.rename_union]
     rename_i ih1 ih2
-    apply Typed.letval1
+    apply Typed.letval
     apply ih1 <;> aesop
     apply ih2
     apply VarRename.ext_var; trivial
     apply TVarRename.ext_var; trivial
     subst_vars
     simp [CType.rename_weaken_comm]
-    apply DropBinder.rename; trivial
-  case letval2 ih1 ih2 => 
-    simp [Term.rename]
-    apply Typed.letval2
-    apply ih1 <;> trivial
-    apply Value.rename; trivial
-    apply ih2
-    apply VarRename.ext_var; trivial
-    apply TVarRename.ext_var; trivial
-    subst_vars
-    simp [CType.rename_weaken_comm]
-    apply DropBinderFree.rename; trivial
+    apply LetC.rename; trivial
 
 def Typed.weaken_var (h : Typed Γ t C T) P :
    Typed (Ctx.extend_var Γ D P) t.weaken_var C.weaken_var T.weaken_var := by

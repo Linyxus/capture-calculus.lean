@@ -10,6 +10,7 @@ import CC.Type.TypeSubst
 import CC.Term
 import CC.Context
 import CC.Subtype
+import CC.Sep
 
 namespace CC
 
@@ -20,6 +21,21 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
   | drop_free : DropBinderFree C C' -> DropBinder C C'
   | drop : DropBinder (C.weaken_var ∪ {0}) C
 
+inductive Sep' : LetMode -> Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
+| seq : Sep' LetMode.seq Γ C1 C2
+| par : Sep Γ C1 C2 -> Sep' LetMode.par Γ C1 C2
+
+inductive LetC : LetMode -> Term n m -> CaptureSet n -> CaptureSet n.succ -> CaptureSet n -> Prop where
+  | normal :
+    DropBinder Cu Cu' ->
+    Sep' M Γ Ct Cu' ->
+    LetC M t Ct Cu (Ct ∪ Cu')
+  | gc :
+    DropBinderFree Cu Cu' ->
+    Sep' M Γ Ct Cu' ->
+    Value t ->
+    LetC M t Ct Cu Cu'
+
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
   BoundVar Γ x D (CType.capt C S) ->
@@ -29,7 +45,7 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
   Subtype Γ T T' ->
   Typed Γ t C T'
 | abs :
-  Typed (Ctx.extend_var Γ D T) t C U ->
+  Typed (Ctx.extend_var Γ (SepDegree.elems D) T) t C U ->
   DropBinder C C' ->
   Typed Γ (Term.abs D T t) C' (CType.capt C' (PType.arr D T U))
 | tabs :
@@ -38,6 +54,7 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | app :
   Typed Γ (Term.var x) Cx (CType.capt C (PType.arr D T U)) ->
   Typed Γ (Term.var y) Cy T ->
+  Sep Γ {y} { elems := D, cap := false, rdr := false } ->
   Typed Γ (Term.app x y) (Cx ∪ Cy) (U.open_var y)
 | tapp :
   Typed Γ (Term.var x) Cx (CType.capt C (PType.tarr S T)) ->
@@ -48,19 +65,28 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | unbox :
   Typed Γ (Term.var x) Cx (CType.capt C0 (PType.boxed (CType.capt C S))) ->
   Typed Γ (Term.unbox C x) (C ∪ {x}) (CType.capt C S)
-| letval1 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
+| letval :
   Typed Γ t Ct T ->
   Typed (Ctx.extend_var Γ {} T) u Cu U ->
   U = U'.weaken_var ->
-  DropBinder Cu Cu' ->
-  Typed Γ (Term.letval t u) (Ct ∪ Cu') U'
-| letval2 : ∀ {Γ : Ctx n m} {U' : CType n m} {Cu' : CaptureSet n},
-  Typed Γ v Ct T ->
-  Value v ->
-  Typed (Ctx.extend_var Γ {} T) u Cu U ->
+  LetC M t Ct Cu Cu' ->
+  Typed Γ (Term.letval M t u) Cu' U'
+| letvar :
+  Typed Γ (Term.var y) Cy (CType.capt {} S) ->
+  Typed (Ctx.extend_var Γ D (CType.capt { elems := {}, rdr := false, cap := true } (PType.ref S))) t Ct U ->
   U = U'.weaken_var ->
-  DropBinderFree Cu Cu' ->
-  Typed Γ (Term.letval v u) Cu' U'
+  DropBinder Ct Ct' ->
+  Typed Γ (Term.letvar D y t) (Ct' ∪ {y}) U'
+| reader :
+  Typed Γ (Term.var x) Cx (CType.capt C (PType.ref S)) ->
+  Typed Γ (Term.reader x) {x} (CType.capt {x} (PType.reader S))
+| read :
+  Typed Γ (Term.var x) Cx (CType.capt C (PType.reader S)) ->
+  Typed Γ (Term.read x) {x} (CType.capt {} S)
+| write :
+  Typed Γ (Term.var x) Cx (CType.capt C (PType.ref S)) ->
+  Typed Γ (Term.var y) Cy (CType.capt {} S) ->
+  Typed Γ (Term.write x y) (Cx ∪ Cy) (CType.capt {} S)
 
 -- The following provides a function that computes the capture set defined by DropBinder.
 -- They are currently unused, therefore commented and unported.
