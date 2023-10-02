@@ -17,7 +17,7 @@ inductive CType : Nat -> Nat -> Type where
   CaptureSet n ->
   PType n m ->
   CType n m
-| cap : CType n m
+| cap : Fin n -> CType n m
 
 end
 
@@ -27,23 +27,23 @@ def PType.rename (S : PType n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : PType
   | PType.top => PType.top
   | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => 
     PType.arr (CType.capt (C1.rename f) (S1.rename f g)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
-  | PType.arr CType.cap (CType.capt C2 S2) => 
-    PType.arr CType.cap (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
-  | PType.arr (CType.capt C1 S1) CType.cap => 
-    PType.arr (CType.capt (C1.rename f) (S1.rename f g)) CType.cap
-  | PType.arr CType.cap CType.cap => 
-    PType.arr CType.cap CType.cap
+  | PType.arr (CType.cap o) (CType.capt C2 S2) => 
+    PType.arr (CType.cap (f o)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
+  | PType.arr (CType.capt C1 S1) (CType.cap o) => 
+    PType.arr (CType.capt (C1.rename f) (S1.rename f g)) (CType.cap (f.ext o))
+  | PType.arr (CType.cap o) (CType.cap o1) => 
+    PType.arr (CType.cap (f o)) (CType.cap (f.ext o1))
   | PType.tarr S (CType.capt C R) => 
     PType.tarr (S.rename f g) (CType.capt (C.rename f) (R.rename f g.ext))
-  | PType.tarr S CType.cap => 
-    PType.tarr (S.rename f g) CType.cap
+  | PType.tarr S (CType.cap o) => 
+    PType.tarr (S.rename f g) (CType.cap (f o))
   | PType.boxed (CType.capt C R) => PType.boxed (CType.capt (C.rename f) (R.rename f g))
-  | PType.boxed CType.cap => PType.boxed CType.cap
+  | PType.boxed (CType.cap o) => PType.boxed (CType.cap (f o))
 
 def CType.rename (T : CType n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : CType n2 m2 :=
   match T with
   | CType.capt C S => CType.capt (C.rename f) (S.rename f g)
-  | CType.cap => CType.cap
+  | CType.cap o => CType.cap (f o)
 
 def PType.weaken_var (S : PType n m) : PType n.succ m :=
   S.rename weaken_map id
@@ -101,15 +101,15 @@ theorem PType.rename_id : (S : PType n m) -> S.rename id id = S
   have ih1 := PType.rename_id S1
   have ih2 := PType.rename_id S2
   aesop
-| PType.arr CType.cap (CType.capt C2 S2) => by
+| PType.arr (CType.cap o) (CType.capt C2 S2) => by
   simp [PType.rename]
   have ih2 := PType.rename_id S2
   aesop
-| PType.arr (CType.capt C1 S1) CType.cap => by
+| PType.arr (CType.capt C1 S1) (CType.cap o) => by
   simp [PType.rename]
   have ih1 := PType.rename_id S1
   aesop
-| PType.arr CType.cap CType.cap => by
+| PType.arr (CType.cap o) (CType.cap o1) => by
   simp [PType.rename]
   aesop
 | PType.tarr S (CType.capt C R) => by
@@ -117,14 +117,14 @@ theorem PType.rename_id : (S : PType n m) -> S.rename id id = S
   have ih1 := PType.rename_id S
   have ih2 := PType.rename_id R
   aesop
-| PType.tarr S CType.cap => by
+| PType.tarr S (CType.cap o) => by
   simp [PType.rename]
   have ih1 := PType.rename_id S
   aesop
 | PType.boxed (CType.capt C R) => by
   simp [PType.rename]
   have ih := PType.rename_id R; aesop
-| PType.boxed CType.cap => by
+| PType.boxed (CType.cap o) => by
   simp [PType.rename]
   aesop
 
@@ -132,7 +132,7 @@ theorem PType.rename_id : (S : PType n m) -> S.rename id id = S
 theorem CType.rename_id : (T : CType n m) -> T.rename id id = T
 | CType.capt C S => by
   simp [CType.rename]
-| CType.cap => by
+| CType.cap o => by
   simp [CType.rename]
 
 theorem PType.rename_comp
@@ -149,42 +149,42 @@ theorem PType.rename_comp
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
   apply And.intro <;> apply PType.rename_comp
-| PType.arr CType.cap (CType.capt C2 S2) => by
+| PType.arr (CType.cap o) (CType.capt C2 S2) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
   apply And.intro <;> try apply PType.rename_comp
-  simp [CType.rename]
-| PType.arr (CType.capt C1 S1) CType.cap => by
+  simp [CType.rename, VarMap.comp]
+| PType.arr (CType.capt C1 S1) (CType.cap o) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
   apply And.intro <;> try apply PType.rename_comp
-  simp [CType.rename]
-| PType.arr CType.cap CType.cap => by
+  simp [CType.rename, VarMap.comp]
+| PType.arr (CType.cap o1) (CType.cap o2) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
-  apply And.intro <;> simp [CType.rename]
+  apply And.intro <;> simp [CType.rename, VarMap.comp]
 | PType.tarr S (CType.capt C R) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
   apply And.intro <;> apply PType.rename_comp
-| PType.tarr S CType.cap => by
+| PType.tarr S (CType.cap o) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   simp [ext_comp]
   apply And.intro <;> try apply PType.rename_comp
-  simp [CType.rename]
+  simp [CType.rename, VarMap.comp]
 | PType.boxed (CType.capt C R) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
   apply PType.rename_comp
-| PType.boxed CType.cap => by
+| PType.boxed (CType.cap o) => by
   simp [PType.rename]
   simp [CaptureSet.rename_comp]
-  simp [CType.rename]
+  simp [CType.rename, VarMap.comp]
 
 theorem CType.rename_comp
   {f1 : VarMap n1 n2} {f2 : VarMap n2 n3}
@@ -193,8 +193,8 @@ theorem CType.rename_comp
   (T.rename f1 g1).rename f2 g2 = T.rename (f2.comp f1) (g2.comp g1)
 | CType.capt C R => by
   simp [CaptureSet.rename_comp, PType.rename_comp]
-| CType.cap => by
-  simp [CType.rename]
+| CType.cap o => by
+  simp [CType.rename, VarMap.comp]
 
 -- def PType.open_tvar_rec (S : PType n m) (R : PType n m) (k : Fin m) : PType n m :=
 --   match S with
@@ -210,14 +210,14 @@ theorem CType.rename_comp
 def CType.at (T : CType n m) (C : CaptureSet n) : CType n m :=
   match T with
   | capt _ S => capt C S
-  | cap => cap
+  | cap o => cap o
 
 def CType.rename_at {T : CType n m} :
   (T.at C).rename f g = (T.rename f g).at (C.rename f) := by 
   cases T <;> aesop
 
 lemma CType.at_cap :
-  (cap : CType n m).at C = cap := by simp [CType.at]
+  (cap o : CType n m).at C = cap o := by simp [CType.at]
 
 lemma CType.at_capt :
   (CType.capt C S).at C' = CType.capt C' S := by simp [CType.at]
