@@ -44,6 +44,28 @@ theorem Typed.var_inv_subcapt :
   Subcapt Γ {x} C := by
   apply Typed.var_inv_subcapt' <;> aesop
 
+lemma Typed.var_inv_subcapt_cap'
+  (he1 : t0 = Term.var x)
+  (he2 : T0 = CType.cap o)
+  (h : Typed Γ t0 Cx T0) :
+  Subcapt Γ {o} {x} := by
+  induction h <;> try (solve | cases he1 | cases he2)
+  case var hb =>
+    cases he1
+    rename_i T0
+    cases T0 <;> cases he2
+    apply Subcapt.refl
+  case sub hx hsub ih =>
+    cases he1; cases he2
+    cases hsub
+    have ih' := ih rfl rfl
+    apply Subcapt.sc_trans <;> trivial
+
+lemma Typed.var_inv_subcapt_cap
+  (h : Typed Γ (Term.var x) Cx (CType.cap o)) :
+  Subcapt Γ {o} {x} :=
+  Typed.var_inv_subcapt_cap' rfl rfl h
+
 theorem Typed.app_inv' :
   t0 = Term.app x y ->
   Typed Γ t0 C0 U ->

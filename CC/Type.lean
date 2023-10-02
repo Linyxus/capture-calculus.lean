@@ -207,17 +207,17 @@ theorem CType.rename_comp
 --   | PType.boxed (CType.capt C S) =>
 --     PType.boxed (CType.capt C (S.open_tvar_rec R k))
 
-def CType.at (T : CType n m) (C : CaptureSet n) : CType n m :=
+def CType.at (T : CType n m) (x : Fin n) : CType n m :=
   match T with
-  | capt _ S => capt C S
-  | cap o => cap o
+  | capt _ S => capt {x} S
+  | cap _ => cap x
 
 def CType.rename_at {T : CType n m} :
-  (T.at C).rename f g = (T.rename f g).at (C.rename f) := by 
+  (T.at x).rename f g = (T.rename f g).at (f x) := by 
   cases T <;> aesop
 
 lemma CType.at_cap :
-  (cap o : CType n m).at C = cap o := by simp [CType.at]
+  (cap o : CType n m).at x = cap x := by simp [CType.at]
 
 lemma CType.at_capt :
-  (CType.capt C S).at C' = CType.capt C' S := by simp [CType.at]
+  (CType.capt C S).at x = CType.capt {x} S := by simp [CType.at]

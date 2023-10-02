@@ -38,3 +38,8 @@ def Subcapt.subst (σ : VarSubst Γ Δ f) :
     rw [rename_singleton] at h
     rw [<- eq2]
     assumption
+  case sc_nest h =>
+    simp [rename_singleton]
+    have h' := σ h
+    simp [CType.rename] at h'
+    apply Typed.var_inv_subcapt_cap; trivial

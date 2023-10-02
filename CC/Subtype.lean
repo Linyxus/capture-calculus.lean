@@ -17,7 +17,8 @@ inductive Subtype : Ctx n m -> CType n m -> CType n m -> Prop where
   SubtypeP Γ S1 S2 ->
   Subtype Γ (CType.capt C1 S1) (CType.capt C2 S2)
 | cap :
-  Subtype Γ CType.cap CType.cap
+  Subcapt Γ {o2} {o1} ->
+  Subtype Γ (CType.cap o1) (CType.cap o2)
 
 inductive SubtypeP : Ctx n m -> PType n m -> PType n m -> Prop where
 | refl :
