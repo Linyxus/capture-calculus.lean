@@ -37,3 +37,9 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) : Subc
     rw [rename_singleton] at h
     rw [<- eq2]
     assumption
+  case sc_nest hb =>
+    simp [rename_singleton]
+    apply Subcapt.sc_nest
+    have H := σ hb
+    simp [CType.rename] at H
+    assumption

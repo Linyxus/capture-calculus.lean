@@ -37,7 +37,12 @@ theorem Typed.var_bound_type :
     constructor
   case cap =>
     rw [<- CType.at_cap]
+    apply Typed.sub
     apply Typed.var
+    assumption
+    simp [CType.at_cap]
+    apply Subtype.cap
+    apply Subcapt.sc_nest; assumption
     assumption
 
 def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :

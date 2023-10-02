@@ -23,7 +23,7 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
   BoundVar Γ x T ->
-  Typed Γ (Term.var x) {x} (T.at {x})
+  Typed Γ (Term.var x) {x} (T.at x)
 | sub :
   Typed Γ t C T ->
   Subtype Γ T T' ->

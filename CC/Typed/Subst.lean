@@ -40,6 +40,28 @@ theorem Typed.precise_var' (h : Typed Γ t Cx T) :
       cases hsub; assumption
     case cap => cases hsub
 
+lemma Typed.precise_var_cap'
+  (he1 : t0 = Term.var x)
+  (he2 : T0 = CType.cap o)
+  (h : Typed Γ t0 Cx T0) :
+  Typed Γ (Term.var x) Cx (CType.cap x) := by
+  induction h <;> try (solve | cases he1 | cases he2)
+  case var hb =>
+    cases he1
+    rename_i T0; cases T0 <;> cases he2
+    rw [<- CType.at_cap]
+    constructor; trivial
+  case sub hx hsub ih =>
+    cases he1; cases he2
+    cases hsub
+    have ih' := ih rfl rfl
+    assumption
+
+lemma Typed.precise_var_cap
+  (h : Typed Γ (Term.var x) Cx (CType.cap o)) :
+  Typed Γ (Term.var x) Cx (CType.cap x) :=
+  Typed.precise_var_cap' rfl rfl h
+
 def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
   {Δ : Ctx n2 m}
   (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
@@ -51,7 +73,9 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     case capt =>
       apply Typed.precise_var' <;> try rfl
       exact h'
-    case cap => simp [CType.at, CType.rename] at *; trivial
+    case cap => 
+      apply Typed.precise_var_cap
+      simp [CType.at, CType.rename] at *; trivial
   case sub hsub ih => 
     apply Typed.sub
     apply ih <;> trivial

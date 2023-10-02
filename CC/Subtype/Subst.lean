@@ -32,7 +32,10 @@ def SubtypeP.subst (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
     apply Subtype.capt
     apply Subcapt.subst <;> aesop
     aesop
-  case cap => intros; simp [CType.rename]; constructor
+  case cap => 
+    intros; simp [CType.rename]; constructor
+    rw [<- rename_singleton]; rw [<- rename_singleton]
+    apply Subcapt.subst <;> aesop
   case refl =>
     intros; constructor
   case trans =>
@@ -72,10 +75,13 @@ def SubtypeP.subst (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
 
 def Subtype.subst (h : Subtype Γ T1 T2) (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
   Subtype Δ (T1.rename f id) (T2.rename f id) := by
-  cases h <;> try (solve | simp [CType.rename]; constructor)
-  constructor
-  apply Subcapt.subst <;> aesop
-  apply SubtypeP.subst <;> aesop
+  cases h
+  · constructor
+    apply Subcapt.subst <;> aesop
+    apply SubtypeP.subst <;> aesop
+  · simp [CType.rename]; constructor
+    rw [<- rename_singleton]; rw [<- rename_singleton]
+    apply Subcapt.subst <;> aesop
 
 def Subtype.narrow_var (hsub : Subtype Γ T1 T2)
   (h0 : Subtype (Ctx.extend_var Γ T2) U1 U2) :

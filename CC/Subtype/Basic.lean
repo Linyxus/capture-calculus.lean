@@ -21,7 +21,9 @@ theorem Subtype.refl :
     constructor
     apply Subcapt.refl
     apply SubtypeP.refl
-  case cap => constructor
+  case cap => 
+    constructor
+    apply Subcapt.refl
 
 theorem Subtype.trans
   (h1 : Subtype Γ T1 T2)
@@ -34,4 +36,6 @@ theorem Subtype.trans
       constructor
       apply Subcapt.sc_trans <;> trivial
       apply SubtypeP.trans <;> trivial
-  case cap => cases h2; constructor
+  case cap => 
+    cases h2; constructor
+    apply Subcapt.sc_trans <;> trivial

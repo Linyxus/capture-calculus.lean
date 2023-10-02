@@ -32,3 +32,8 @@ def Subcapt.tsubst
     apply Subcapt.sc_set
     intros x he
     apply ih <;> trivial
+  case sc_nest hb =>
+    apply Subcapt.sc_nest
+    have h1 := δ hb
+    simp [CType.tsubst] at h1
+    exact h1
