@@ -1,4 +1,5 @@
 import Mathlib.Data.Fin.Basic
+import CC.BiFin
 
 namespace CC
 
@@ -12,7 +13,22 @@ def VarMap.ext (f : VarMap n m) : VarMap n.succ m.succ := by
 
 def VarMap.comp (f : VarMap n2 n3) (f' : VarMap n1 n2) : VarMap n1 n3 := Function.comp f f'
 
+def BVarMap (n1 k1 n2 k2 : Nat) : Type := BiFin n1 k1 -> BiFin n2 k2
+
+def BVarMap.comp (f : BVarMap n2 k2 n3 k3) (f' : BVarMap n1 k1 n2 k2) : BVarMap n1 k1 n3 k3 := Function.comp f f'
+
+-- def BVarMap.ext (f : BVarMap n1 k1 n2 k2) : BVarMap n1.succ k1 n2.succ k2 := by
+--   intro i
+--   cases i with
+--   | injn i => exact injn i.succ
+--   | injk i => exact (f (BiFin.injk i))
+
 def weaken_map : VarMap n n.succ := fun x => x.succ
+
+def weaken_bmap : BVarMap n k n.succ k := fun x =>
+  match x with
+  | BiFin.injn x => BiFin.injn x.succ
+  | BiFin.injk x => BiFin.injk x
 
 def weaken_n_map (k : Nat) : VarMap n (n+k) := fun x => Fin.addNat k x
 
@@ -21,6 +37,16 @@ def open_map (k : Fin n) : VarMap n.succ n := by
   cases i using Fin.cases with
   | H0 => exact k
   | Hs i0 => exact i0
+
+def open_bmap (k : Fin n) : BVarMap n.succ k0 n k0 := by
+  intro i
+  cases i with
+  | injn i => 
+    cases i using Fin.cases with
+    | H0 => exact BiFin.injn k
+    | Hs i0 => exact BiFin.injn i0
+  | injk i =>
+    exact BiFin.injk i
 
 @[simp]
 theorem open_map_zero (k : Fin n) :
