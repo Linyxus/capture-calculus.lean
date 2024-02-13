@@ -21,3 +21,5 @@ inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_set :
   (∀ x, x ∈ C1 -> Subcapt Γ {x} C2) ->
   Subcapt Γ C1 C2
+| sc_reach :
+  Subcapt Γ {x} ⟨∅, {x}, false⟩

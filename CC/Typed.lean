@@ -62,114 +62,114 @@ inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
   DropBinderFree Cu Cu' ->
   Typed Γ (Term.letval v u) Cu' U'
 
-def lower_var : Fin (Nat.succ n) →. Fin n :=
-  fun x =>
-    { Dom := x ≠ 0, 
-      get := fun h => x.pred h }
+-- def lower_var : Fin (Nat.succ n) →. Fin n :=
+--   fun x =>
+--     { Dom := x ≠ 0,
+--       get := fun h => x.pred h }
 
-instance : (x : Fin (Nat.succ n)) → Decidable (lower_var x).Dom := by
-  intro x
-  unfold lower_var
-  simp
-  apply instDecidableNot
+-- instance : (x : Fin (Nat.succ n)) → Decidable (lower_var x).Dom := by
+--   intro x
+--   unfold lower_var
+--   simp
+--   apply instDecidableNot
 
-def CaptureSet.lower (C : CaptureSet n.succ) : CaptureSet n := ⟨Finset.pimage lower_var C.elems⟩
+-- def CaptureSet.lower (C : CaptureSet n.succ) : CaptureSet n := ⟨Finset.pimage lower_var C.elems, Finset.pimage lower_var C.reachElems, C.hasCap⟩
 
-theorem CaptureSet.lower_drop_binder_notin
-  {C : CaptureSet (Nat.succ n)}
-  (h : 0 ∉ C) :
-  C.lower.weaken_var = C := by
-  apply CaptureSet.val_eq
-  ext a0
-  constructor
-  · intros h
-    unfold weaken_var at h; unfold rename at h; unfold lower at h
-    repeat rw [val_def] at h
-    rw [Finset.mem_image] at h
-    let ⟨a1, h1, he1⟩ := h; clear h
-    rw [Finset.mem_pimage] at h1
-    let ⟨a2, h2, he2⟩ := h1; clear h1
-    simp [lower_var] at he2
-    let ⟨he2, he3⟩ := he2
-    simp [weaken_map] at he1
-    aesop
-  · intros h
-    simp [weaken_var, lower, rename, weaken_map, lower_var]
-    cases a0 using Fin.cases with
-    | H0 =>
-      rename_i he
-      exfalso
-      apply he
-      simp [mem_def]; trivial
-    | Hs az =>
-      apply Exists.intro az
-      apply And.intro
-      · rw [Finset.mem_pimage]
-        simp
-        apply Exists.intro az.succ
-        constructor; trivial
-        have h0 : az.succ ≠ 0 := by
-          intros h0
-          cases h0
-        aesop
-      · simp
+-- theorem CaptureSet.lower_drop_binder_notin
+--   {C : CaptureSet (Nat.succ n)}
+--   (h : 0 ∉ C) :
+--   C.lower.weaken_var = C := by
+--   apply CaptureSet.val_eq
+--   ext a0
+--   constructor
+--   · intros h
+--     unfold weaken_var at h; unfold rename at h; unfold lower at h
+--     repeat rw [val_def] at h
+--     rw [Finset.mem_image] at h
+--     let ⟨a1, h1, he1⟩ := h; clear h
+--     rw [Finset.mem_pimage] at h1
+--     let ⟨a2, h2, he2⟩ := h1; clear h1
+--     simp [lower_var] at he2
+--     let ⟨he2, he3⟩ := he2
+--     simp [weaken_map] at he1
+--     aesop
+--   · intros h
+--     simp [weaken_var, lower, rename, weaken_map, lower_var]
+--     cases a0 using Fin.cases with
+--     | H0 =>
+--       rename_i he
+--       exfalso
+--       apply he
+--       simp [mem_def]; trivial
+--     | Hs az =>
+--       apply Exists.intro az
+--       apply And.intro
+--       · rw [Finset.mem_pimage]
+--         simp
+--         apply Exists.intro az.succ
+--         constructor; trivial
+--         have h0 : az.succ ≠ 0 := by
+--           intros h0
+--           cases h0
+--         aesop
+--       · simp
 
-theorem CaptureSet.lower_drop_binder_in
-  {C : CaptureSet (Nat.succ n)}
-  (h : 0 ∈ C) :
-  C.lower.weaken_var ∪ {0} = C := by
-  apply CaptureSet.val_eq
-  ext a0
-  constructor
-  · intros h
-    have h1 := in_union_elems h
-    cases h1
-    · rename_i h
-      unfold weaken_var at h; unfold rename at h; unfold lower at h
-      repeat rw [val_def] at h
-      rw [Finset.mem_image] at h
-      let ⟨a1, h1, he1⟩ := h; clear h
-      rw [Finset.mem_pimage] at h1
-      let ⟨a2, h2, he2⟩ := h1; clear h1
-      simp [lower_var] at he2
-      let ⟨he2, he3⟩ := he2
-      simp [weaken_map] at he1
-      aesop
-    · rename_i h0 h
-      simp [singleton_val] at h
-      aesop
-  · intros h
-    simp [union_def]
-    cases a0 using Fin.cases with
-    | H0 =>
-      apply Or.inr
-      simp [singleton_val]
-    | Hs az =>
-      apply Or.inl
-      simp [weaken_var, lower, rename, weaken_map, lower_var]
-      rw [Finset.mem_pimage]
-      simp
-      apply Exists.intro az.succ
-      constructor; trivial
-      have h0 : az.succ ≠ 0 := by
-        intros h0
-        cases h0
-      aesop
+-- theorem CaptureSet.lower_drop_binder_in
+--   {C : CaptureSet (Nat.succ n)}
+--   (h : 0 ∈ C) :
+--   C.lower.weaken_var ∪ {0} = C := by
+--   apply CaptureSet.val_eq
+--   ext a0
+--   constructor
+--   · intros h
+--     have h1 := in_union_elems h
+--     cases h1
+--     · rename_i h
+--       unfold weaken_var at h; unfold rename at h; unfold lower at h
+--       repeat rw [val_def] at h
+--       rw [Finset.mem_image] at h
+--       let ⟨a1, h1, he1⟩ := h; clear h
+--       rw [Finset.mem_pimage] at h1
+--       let ⟨a2, h2, he2⟩ := h1; clear h1
+--       simp [lower_var] at he2
+--       let ⟨he2, he3⟩ := he2
+--       simp [weaken_map] at he1
+--       aesop
+--     · rename_i h0 h
+--       simp [singleton_val] at h
+--       aesop
+--   · intros h
+--     simp [union_def]
+--     cases a0 using Fin.cases with
+--     | H0 =>
+--       apply Or.inr
+--       simp [singleton_val]
+--     | Hs az =>
+--       apply Or.inl
+--       simp [weaken_var, lower, rename, weaken_map, lower_var]
+--       rw [Finset.mem_pimage]
+--       simp
+--       apply Exists.intro az.succ
+--       constructor; trivial
+--       have h0 : az.succ ≠ 0 := by
+--         intros h0
+--         cases h0
+--       aesop
 
-theorem CaptureSet.lower_drop_binder
-  {C : CaptureSet (Nat.succ n)} [he : Decidable (0 ∈ C)] :
-  DropBinder C C.lower := by
-  cases he with
-  | isFalse he =>
-    have h0 := CaptureSet.lower_drop_binder_notin he
-    conv =>
-      arg 1
-      rw [<- h0]
-    apply DropBinder.drop_free
-    constructor
-  | isTrue he =>
-    have h0 := CaptureSet.lower_drop_binder_in he
-    conv =>
-      arg 1
-      rw [<- h0]
-    apply DropBinder.drop
+-- theorem CaptureSet.lower_drop_binder
+--   {C : CaptureSet (Nat.succ n)} [he : Decidable (0 ∈ C)] :
+--   DropBinder C C.lower := by
+--   cases he with
+--   | isFalse he =>
+--     have h0 := CaptureSet.lower_drop_binder_notin he
+--     conv =>
+--       arg 1
+--       rw [<- h0]
+--     apply DropBinder.drop_free
+--     constructor
+--   | isTrue he =>
+--     have h0 := CaptureSet.lower_drop_binder_in he
+--     conv =>
+--       arg 1
+--       rw [<- h0]
+--     apply DropBinder.drop

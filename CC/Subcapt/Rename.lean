@@ -37,3 +37,4 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (
     rw [rename_singleton] at h
     rw [<- eq2]
     assumption
+  case sc_reach => apply Subcapt.sc_reach

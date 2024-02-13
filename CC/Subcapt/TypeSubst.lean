@@ -32,3 +32,4 @@ def Subcapt.tsubst
     apply Subcapt.sc_set
     intros x he
     apply ih <;> trivial
+  case sc_reach => apply Subcapt.sc_reach
