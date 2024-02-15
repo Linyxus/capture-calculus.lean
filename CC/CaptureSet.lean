@@ -12,6 +12,9 @@ structure CaptureSet (n : Nat) where
 instance : Membership (Fin n) (CaptureSet n) :=
   ⟨fun a s => a ∈ s.1⟩
 
+def mem_reach (x : Fin n) (C : CaptureSet n) : Prop :=
+  x ∈ C.reachElems
+
 instance : Singleton (Fin n) (CaptureSet n) :=
   ⟨fun x => ⟨{x}, ∅, false⟩⟩
 
@@ -20,6 +23,13 @@ instance : Union (CaptureSet n) :=
 
 instance : EmptyCollection (CaptureSet n) :=
   ⟨⟨{}, {}, false⟩⟩
+
+def cap_singleton : CaptureSet n := ⟨{}, {}, true⟩
+
+notation "{cap}" => cap_singleton
+
+def CaptureSet.isUniversal (C : CaptureSet n) : Prop :=
+  C.hasCap = true
 
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
   ⟨C.elems.image f, C.reachElems.image f, C.hasCap⟩
@@ -42,12 +52,20 @@ theorem rename_singleton_reach (x : Fin n) (f : VarMap n n') :
   simp [CaptureSet.rename]
 
 @[simp]
+theorem rename_singleton_cap :
+  CaptureSet.rename {cap} f = {cap} := by
+  simp [CaptureSet.rename, cap_singleton]
+
+@[simp]
 theorem rename_empty (f : VarMap n n') :
   CaptureSet.rename ∅ f = ∅ := by
   simp [CaptureSet.rename]
   aesop
 
 theorem mem_def {x : Fin n} {C : CaptureSet n} : x ∈ C ↔ x ∈ C.1 := Iff.rfl
+
+theorem mem_reach_def {x : Fin n} {C : CaptureSet n} :
+  mem_reach x C ↔ x ∈ C.2 := Iff.rfl
 
 theorem mem_rename_of_mem (f : VarMap n1 n2) {C : CaptureSet n1} (h : x ∈ C) : f x ∈ C.rename f := by
   unfold CaptureSet.rename
@@ -62,6 +80,24 @@ theorem mem_rename {C : CaptureSet n} :
   y ∈ C.rename f ↔ ∃ x ∈ C, f x = y := by
   simp only [CaptureSet.rename, mem_def]
   aesop
+
+@[simp]
+theorem mem_reach_rename {C : CaptureSet n} :
+  mem_reach y (C.rename f) ↔ ∃ x, mem_reach x C ∧ f x = y := by
+  simp only [CaptureSet.rename, mem_reach_def]
+  aesop
+
+theorem CaptureSet.rename_isUniversal {C : CaptureSet n} :
+  C.isUniversal -> (C.rename f).isUniversal := by
+  intro h
+  simp [CaptureSet.isUniversal, CaptureSet.rename] at *
+  trivial
+
+theorem CaptureSet.rename_isUniversal' {C : CaptureSet n} :
+  (C.rename f).isUniversal -> C.isUniversal := by
+  intro h
+  simp [CaptureSet.isUniversal, CaptureSet.rename] at *
+  trivial
 
 theorem union_def {C1 C2 : CaptureSet n} :
   C1 ∪ C2 = ⟨C1.1 ∪ C2.1, C1.2 ∪ C2.2, C1.3 ∨ C2.3⟩ :=
