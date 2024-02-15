@@ -28,12 +28,12 @@ theorem Typed.var_bound_type :
   intro hb
   cases T
   apply Typed.sub
-  apply Typed.var
-  trivial
-  apply Subtype.capt
-  apply Subcapt.sc_var
-  exact hb
-  constructor
+  · apply Typed.var
+    trivial
+  · apply Subtype.capt
+    apply Subcapt.sc_var
+    exact hb
+    constructor
 
 def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
   VarSubst (Ctx.extend_var Γ P) (Ctx.extend_var Δ (P.rename f id)) f.ext := by
@@ -61,12 +61,12 @@ def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
     have h'' := h'.weaken_var (P.rename f id)
     exact h''
 
-def VarTypeMap.ext_var 
+def VarTypeMap.ext_var
   (σ : VarTypeMap Γ Δ g) T :
   VarTypeMap (Ctx.extend_var Γ T) (Ctx.extend_var Δ (T.tsubst g)) g.ext_var := by
   intros x T h
   cases h
-  case here => 
+  case here =>
     rw [CType.tsubst_weaken_var_comm]
     constructor
   case there_var =>

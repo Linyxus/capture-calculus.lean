@@ -13,6 +13,38 @@ import CC.Subtype
 
 namespace CC
 
+inductive Variance : Type where
+| cov : Variance
+| cot : Variance
+
+def Variance.neg : Variance -> Variance
+| Variance.cov => Variance.cot
+| Variance.cot => Variance.cov
+
+inductive RefineCaptureSet : CaptureSet n -> Fin n -> Variance -> CaptureSet n -> Prop where
+| pos_nocap :
+  RefineCaptureSet ⟨cs, rs, false⟩ x Variance.cov ⟨cs, rs, false⟩
+| pos_cap :
+  RefineCaptureSet ⟨cs, rs, true⟩ x Variance.cov ⟨cs, rs ∪ {x}, false⟩
+| neg :
+  RefineCaptureSet ⟨cs, rs, u⟩ x Variance.cot ⟨cs, rs, u⟩
+
+inductive RefinePType : PType n m -> Fin n -> Variance -> PType n m -> Prop where
+| tvar : RefinePType (PType.tvar X) x v (PType.tvar X)
+| top : RefinePType PType.top x v PType.top
+| arr :
+  RefinePType S x v.neg S' ->
+  RefineCaptureSet C x v.neg C' ->
+  RefinePType (PType.arr (CType.capt C S) U) x v (PType.arr (CType.capt C' S') U)
+| tarr :
+  RefinePType S x v S' ->
+  RefineCaptureSet C x v C' ->
+  RefinePType (PType.tarr R (CType.capt C S)) x v (PType.tarr R (CType.capt C' S'))
+| boxed :
+  RefinePType S x v S' ->
+  RefineCaptureSet C x v C' ->
+  RefinePType (PType.boxed (CType.capt C S)) x v (PType.boxed (CType.capt C' S'))
+
 inductive DropBinderFree : CaptureSet n.succ -> CaptureSet n -> Prop where
   | drop : DropBinderFree C.weaken_var C
 
@@ -23,7 +55,8 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
   BoundVar Γ x (CType.capt C S) ->
-  Typed Γ (Term.var x) {x} (CType.capt {x} S)
+  RefinePType S x Variance.cov Sx ->
+  Typed Γ (Term.var x) {x} (CType.capt {x} Sx)
 | sub :
   Typed Γ t C T ->
   Subtype Γ T T' ->

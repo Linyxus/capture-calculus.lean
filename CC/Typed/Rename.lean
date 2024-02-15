@@ -32,6 +32,28 @@ def DropBinder.rename (h : DropBinder C C') :
     rw [<- CaptureSet.rename_weaken_comm]
     apply DropBinder.drop
 
+def RefineCaptureSet.rename (h : RefineCaptureSet C x v C') :
+  RefineCaptureSet (C.rename f) (f x) v (C'.rename f) := by
+  induction h
+  case pos_nocap => simp [CaptureSet.rename]; constructor
+  case pos_cap => simp [CaptureSet.rename, Finset.image_union]; constructor
+  case neg => constructor
+
+def RefinePType.rename (h : RefinePType S x v S') :
+  RefinePType (S.rename f g) (f x) v (S'.rename f g) := by
+  rename_i n1 m1 n2 m2
+  induction h generalizing n2 m2 <;> try (solve | simp [PType.rename]; constructor)
+  case arr =>
+    simp [PType.rename]; constructor
+    aesop
+    apply RefineCaptureSet.rename; trivial
+  case tarr =>
+    simp [PType.rename]; constructor
+    aesop; apply RefineCaptureSet.rename; trivial
+  case boxed =>
+    simp [PType.rename]; constructor
+    aesop; apply RefineCaptureSet.rename; trivial
+
 def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   {Δ : Ctx n2 m2}
   (σ : VarRename Γ Δ f g)
@@ -40,11 +62,12 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   induction h generalizing n2 m2 Δ
   case var =>
     simp [Term.rename]
+    rename_i hb hr
     apply Typed.var
-    rename_i hb
     have hb' := σ hb
     simp [CType.rename] at hb'
     exact hb'
+    apply RefinePType.rename; trivial
   case sub =>
     apply Typed.sub
     aesop
@@ -75,7 +98,7 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
     apply Typed.app
     apply ih1'
     apply ih2'
-  case tapp => 
+  case tapp =>
     simp [Term.rename]
     simp [CType.rename_open_tvar_comm]
     rename_i ih
@@ -96,7 +119,7 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
     have ih' := ih σ δ
     simp [Term.rename] at ih'
     apply ih'
-  case letval1 => 
+  case letval1 =>
     simp [Term.rename]
     simp [CaptureSet.rename_union]
     rename_i ih1 ih2
@@ -108,7 +131,7 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
     subst_vars
     simp [CType.rename_weaken_comm]
     apply DropBinder.rename; trivial
-  case letval2 ih1 ih2 => 
+  case letval2 ih1 ih2 =>
     simp [Term.rename]
     apply Typed.letval2
     apply ih1 <;> trivial
