@@ -21,29 +21,31 @@ def Variance.neg : Variance -> Variance
 | Variance.cov => Variance.cot
 | Variance.cot => Variance.cov
 
-inductive RefineCaptureSet : CaptureSet n -> Fin n -> Variance -> CaptureSet n -> Prop where
-| pos_nocap :
-  RefineCaptureSet ⟨cs, rs, false⟩ x Variance.cov ⟨cs, rs, false⟩
-| pos_cap :
-  RefineCaptureSet ⟨cs, rs, true⟩ x Variance.cov ⟨cs, rs ∪ {x}, false⟩
-| neg :
-  RefineCaptureSet ⟨cs, rs, u⟩ x Variance.cot ⟨cs, rs, u⟩
+def CaptureSet.refine_reach (C : CaptureSet n) (x : Fin n) (v : Variance) : CaptureSet n :=
+  match C.hasCap, v with
+  | false, _ => C
+  | true, Variance.cov => ⟨C.elems, C.reachElems ∪ {x}, false⟩
+  | true, Variance.cot => C
 
-inductive RefinePType : PType n m -> Fin n -> Variance -> PType n m -> Prop where
-| tvar : RefinePType (PType.tvar X) x v (PType.tvar X)
-| top : RefinePType PType.top x v PType.top
-| arr :
-  RefinePType S x v.neg S' ->
-  RefineCaptureSet C x v.neg C' ->
-  RefinePType (PType.arr (CType.capt C S) U) x v (PType.arr (CType.capt C' S') U)
-| tarr :
-  RefinePType S x v S' ->
-  RefineCaptureSet C x v C' ->
-  RefinePType (PType.tarr R (CType.capt C S)) x v (PType.tarr R (CType.capt C' S'))
-| boxed :
-  RefinePType S x v S' ->
-  RefineCaptureSet C x v C' ->
-  RefinePType (PType.boxed (CType.capt C S)) x v (PType.boxed (CType.capt C' S'))
+def PType.refine_reach (S : PType n m) (x : Fin n) (v : Variance) : PType n m :=
+  match S with
+  | PType.tvar _ => S
+  | PType.top => S
+  | PType.arr (CType.capt C S) U => PType.arr (CType.capt (C.refine_reach x v.neg) (S.refine_reach x v)) U
+  | PType.tarr R (CType.capt C S) => PType.tarr R (CType.capt (C.refine_reach x v) (S.refine_reach x v))
+  | PType.boxed (CType.capt C S) => PType.boxed (CType.capt (C.refine_reach x v) (S.refine_reach x v))
+
+@[simp]
+theorem refine_reach_boxed :
+  (PType.boxed (CType.capt C S)).refine_reach x v = PType.boxed (CType.capt (C.refine_reach x v) (S.refine_reach x v)) := by simp [PType.refine_reach]
+
+@[simp]
+theorem refine_reach_arr :
+  (PType.arr (CType.capt C S) U).refine_reach x v = PType.arr (CType.capt (C.refine_reach x v.neg) (S.refine_reach x v)) U := by simp [PType.refine_reach]
+
+@[simp]
+theorem refine_reach_tarr :
+  (PType.tarr R (CType.capt C S)).refine_reach x v = PType.tarr R (CType.capt (C.refine_reach x v) (S.refine_reach x v)) := by simp [PType.refine_reach]
 
 inductive DropBinderFree : CaptureSet n.succ -> CaptureSet n -> Prop where
   | drop : DropBinderFree C.weaken_var C
@@ -55,8 +57,7 @@ inductive DropBinder : CaptureSet n.succ -> CaptureSet n -> Prop where
 inductive Typed : Ctx n m -> Term n m -> CaptureSet n -> CType n m -> Prop where
 | var :
   BoundVar Γ x (CType.capt C S) ->
-  RefinePType S x Variance.cov Sx ->
-  Typed Γ (Term.var x) {x} (CType.capt {x} Sx)
+  Typed Γ (Term.var x) {x} (CType.capt {x} (S.refine_reach x Variance.cov))
 | sub :
   Typed Γ t C T ->
   Subtype Γ T T' ->

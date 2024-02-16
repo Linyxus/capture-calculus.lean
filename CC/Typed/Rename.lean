@@ -32,27 +32,49 @@ def DropBinder.rename (h : DropBinder C C') :
     rw [<- CaptureSet.rename_weaken_comm]
     apply DropBinder.drop
 
-def RefineCaptureSet.rename (h : RefineCaptureSet C x v C') :
-  RefineCaptureSet (C.rename f) (f x) v (C'.rename f) := by
-  induction h
-  case pos_nocap => simp [CaptureSet.rename]; constructor
-  case pos_cap => simp [CaptureSet.rename, Finset.image_union]; constructor
-  case neg => constructor
+-- def RefineCaptureSet.rename (h : RefineCaptureSet C x v C') :
+--   RefineCaptureSet (C.rename f) (f x) v (C'.rename f) := by
+--   induction h
+--   case pos_nocap => simp [CaptureSet.rename]; constructor
+--   case pos_cap => simp [CaptureSet.rename, Finset.image_union]; constructor
+--   case neg => constructor
 
-def RefinePType.rename (h : RefinePType S x v S') :
-  RefinePType (S.rename f g) (f x) v (S'.rename f g) := by
-  rename_i n1 m1 n2 m2
-  induction h generalizing n2 m2 <;> try (solve | simp [PType.rename]; constructor)
-  case arr =>
-    simp [PType.rename]; constructor
-    aesop
-    apply RefineCaptureSet.rename; trivial
-  case tarr =>
-    simp [PType.rename]; constructor
-    aesop; apply RefineCaptureSet.rename; trivial
-  case boxed =>
-    simp [PType.rename]; constructor
-    aesop; apply RefineCaptureSet.rename; trivial
+theorem CaptureSet.rename_refine_reach {C : CaptureSet n} :
+  (C.refine_reach x v).rename f = (C.rename f).refine_reach (f x) v := by
+  cases C; rename_i u; cases u <;> try (solve | simp [rename, refine_reach])
+  cases v <;> simp [rename, refine_reach, Finset.image_union]
+
+-- def RefinePType.rename (h : RefinePType S x v S') :
+--   RefinePType (S.rename f g) (f x) v (S'.rename f g) := by
+--   rename_i n1 m1 n2 m2
+--   induction h generalizing n2 m2 <;> try (solve | simp [PType.rename]; constructor)
+--   case arr =>
+--     simp [PType.rename]; constructor
+--     aesop
+--     apply RefineCaptureSet.rename; trivial
+--   case tarr =>
+--     simp [PType.rename]; constructor
+--     aesop; apply RefineCaptureSet.rename; trivial
+--   case boxed =>
+--     simp [PType.rename]; constructor
+--     aesop; apply RefineCaptureSet.rename; trivial
+
+def PType.rename_refine_reach : (S : PType n m) ->
+  (S.refine_reach x v).rename f g = (S.rename f g).refine_reach (f x) v
+| PType.tvar X => by simp [rename, refine_reach]
+| PType.top => by simp [rename, refine_reach]
+| PType.boxed (CType.capt C S) => by
+  simp
+  simp [CaptureSet.rename_refine_reach]
+  apply PType.rename_refine_reach
+| PType.arr (CType.capt C S) U => by
+  simp
+  simp [CaptureSet.rename_refine_reach]
+  apply PType.rename_refine_reach
+| PType.tarr R (CType.capt C S) => by
+  simp
+  simp [CaptureSet.rename_refine_reach]
+  apply PType.rename_refine_reach
 
 def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   {Δ : Ctx n2 m2}
@@ -62,12 +84,12 @@ def Typed.rename {Γ : Ctx n1 m1} (h : Typed Γ t C T)
   induction h generalizing n2 m2 Δ
   case var =>
     simp [Term.rename]
-    rename_i hb hr
+    rename_i hb
+    simp [PType.rename_refine_reach]
     apply Typed.var
     have hb' := σ hb
     simp [CType.rename] at hb'
     exact hb'
-    apply RefinePType.rename; trivial
   case sub =>
     apply Typed.sub
     aesop

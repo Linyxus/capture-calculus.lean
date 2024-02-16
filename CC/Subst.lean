@@ -22,18 +22,19 @@ def TVarSubst (Γ : Ctx n m1) (Δ : Ctx n m2) (g : TypeMap n m1 m2) : Prop :=
 def VarTypeMap (Γ : Ctx n m1) (Δ : Ctx n m2) (g : TypeMap n m1 m2) : Prop :=
   ∀ {x T}, BoundVar Γ x T -> BoundVar Δ x (T.tsubst g)
 
-theorem Typed.var_bound_type :
-  BoundVar Γ x T ->
-  Typed Γ (Term.var x) {x} T := by
-  intro hb
-  cases T
-  apply Typed.sub
-  · apply Typed.var
-    trivial
-  · apply Subtype.capt
-    apply Subcapt.sc_var
-    exact hb
-    constructor
+-- theorem Typed.var_bound_type :
+--   BoundVar Γ x T ->
+--   Typed Γ (Term.var x) {x} T := by
+--   intro hb
+--   cases T
+--   apply Typed.sub
+--   · apply Typed.var
+--     trivial
+--   · apply Subtype.capt
+--     apply Subcapt.sc_var
+--     exact hb
+--     -- constructor
+--     sorry
 
 def VarSubst.ext_var (σ : VarSubst Γ Δ f) P :
   VarSubst (Ctx.extend_var Γ P) (Ctx.extend_var Δ (P.rename f id)) f.ext := by

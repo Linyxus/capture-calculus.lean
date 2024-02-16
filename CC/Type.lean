@@ -24,9 +24,9 @@ def PType.rename (S : PType n1 m1) (f : VarMap n1 n2) (g : VarMap m1 m2) : PType
   match S with
   | PType.tvar x => PType.tvar (g x)
   | PType.top => PType.top
-  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) => 
+  | PType.arr (CType.capt C1 S1) (CType.capt C2 S2) =>
     PType.arr (CType.capt (C1.rename f) (S1.rename f g)) (CType.capt (C2.rename f.ext) (S2.rename f.ext g))
-  | PType.tarr S (CType.capt C R) => 
+  | PType.tarr S (CType.capt C R) =>
     PType.tarr (S.rename f g) (CType.capt (C.rename f) (R.rename f g.ext))
   | PType.boxed (CType.capt C R) => PType.boxed (CType.capt (C.rename f) (R.rename f g))
 
