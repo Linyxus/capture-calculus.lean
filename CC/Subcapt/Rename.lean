@@ -48,5 +48,8 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (
   case sc_reach => apply Subcapt.sc_reach
   case sc_elem_cap =>
     simp; simp [CaptureSet.rename]; apply Subcapt.sc_elem_cap
+  case sc_elem_reach =>
+    simp; simp [CaptureSet.rename]; apply Subcapt.sc_elem_reach
+    simp; aesop
   case sc_reach_cap =>
     simp; apply Subcapt.sc_reach_cap

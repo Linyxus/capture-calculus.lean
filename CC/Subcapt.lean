@@ -15,6 +15,9 @@ inductive Subcapt : Ctx n m -> CaptureSet n -> CaptureSet n -> Prop where
 | sc_elem :
   x ∈ C ->
   Subcapt Γ {x} C
+| sc_elem_reach : ∀ {C : CaptureSet n},
+  x ∈ C.reachElems ->
+  Subcapt Γ ⟨ ∅ , {x} , false ⟩ C
 | sc_elem_cap :
   Subcapt Γ {cap} ⟨ xs , rs , true ⟩
 | sc_var :

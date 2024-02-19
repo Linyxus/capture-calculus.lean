@@ -28,8 +28,15 @@ def Subcapt.tsubst
     have h1 := δ hb
     simp [CType.tsubst] at h1
     exact h1
-  case sc_set ih =>
+  case sc_set ih ihr ihu =>
     apply Subcapt.sc_set
-    intros x he
-    apply ih <;> trivial
+    · intros x he
+      apply ih <;> trivial
+    · intros x he
+      apply ihr <;> trivial
+    · intros hu
+      apply ihu <;> trivial
   case sc_reach => apply Subcapt.sc_reach
+  case sc_reach_cap => apply Subcapt.sc_reach_cap
+  case sc_elem_reach => apply Subcapt.sc_elem_reach; trivial
+  case sc_elem_cap => apply Subcapt.sc_elem_cap

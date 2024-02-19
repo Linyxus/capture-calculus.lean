@@ -72,6 +72,11 @@ theorem mem_rename_of_mem (f : VarMap n1 n2) {C : CaptureSet n1} (h : x ∈ C) :
   simp [mem_def]
   aesop
 
+theorem mem_rename_of_mem_reach (f : VarMap n1 n2) {C : CaptureSet n1} (h : mem_reach x C) : mem_reach (f x) (C.rename f) := by
+  unfold CaptureSet.rename
+  simp [mem_reach_def]
+  aesop
+
 instance decidableMem (x : Fin n) (C : CaptureSet n) : Decidable (x ∈ C) :=
   Finset.decidableMem _ _
 

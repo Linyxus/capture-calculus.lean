@@ -16,6 +16,15 @@ import CC.Subtype.TypeSubst
 
 namespace CC
 
+theorem RefinePType.tsubst (h : RefinePType S x v S') :
+  RefinePType (S.tsubst g) x v (S'.tsubst g) := by
+  rename_i n m1 m2
+  induction h generalizing m2
+    <;> try (solve | simp [PType.tsubst]; constructor)
+  case arr ih => simp [PType.tsubst]; constructor; trivial; aesop
+  case tarr ih => simp [PType.tsubst]; constructor; trivial; aesop
+  case boxed ih => simp [PType.tsubst]; constructor; trivial; aesop
+
 def Typed.tsubst {Δ : Ctx n m2}
   (h : Typed Γ t C T)
   (σ : VarTypeMap Γ Δ g)
@@ -27,6 +36,10 @@ def Typed.tsubst {Δ : Ctx n m2}
     have hb' := σ hb
     simp [CType.tsubst] at hb'
     constructor; trivial
+  case var_refine hr ih =>
+    apply Typed.var_refine
+    apply ih <;> trivial
+    apply RefinePType.tsubst; trivial
   case sub ih =>
     apply Typed.sub
     apply ih <;> trivial

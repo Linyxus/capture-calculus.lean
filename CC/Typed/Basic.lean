@@ -11,17 +11,20 @@ import CC.Subtype.Basic
 
 namespace CC
 
-theorem Typed.var_inv_subcapt' : 
+theorem Typed.var_inv_subcapt' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->
   Typed Γ t0 Cx T0 ->
   Subcapt Γ {x} C := by
   intro eq1 eq2 h
-  induction h 
+  induction h
   case var =>
     cases eq1
     cases eq2
     apply Subcapt.refl
+  case var_refine ih =>
+    cases eq1; cases eq2
+    apply ih <;> trivial
   case sub ih =>
     rename_i T T' _ _
     cases T
@@ -43,7 +46,7 @@ theorem Typed.var_inv_subcapt :
 theorem Typed.app_inv' :
   t0 = Term.app x y ->
   Typed Γ t0 C0 U ->
-  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧
     Typed Γ (Term.var y) Cy T ∧
     Subtype Γ (U0.open_var y) U := by
   intro heq h
@@ -70,7 +73,7 @@ theorem Typed.app_inv' :
 
 theorem Typed.app_inv :
   Typed Γ (Term.app x y) C0 U ->
-  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧ 
+  ∃ Cx Cy Cf T U0, Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U0)) ∧
     Typed Γ (Term.var y) Cy T ∧
     Subtype Γ (U0.open_var y) U := by
   apply Typed.app_inv'
@@ -128,8 +131,8 @@ theorem Typed.unbox_inv :
   ∃ Cx Cf,
     Typed Γ (Term.var x) Cx (CType.capt Cf (PType.boxed U)) := by apply Typed.unbox_inv'; aesop
 
-def LetHole 
-  (Γ : Ctx n m) 
+def LetHole
+  (Γ : Ctx n m)
   (u : Term n.succ m)
   (T : CType n m) (U : CType n m) : Prop :=
   ∀ Ct' t',
@@ -137,7 +140,7 @@ def LetHole
     ∃ C', Typed Γ (Term.letval t' u) C' U
 
 def LetHole1
-  (Γ : Ctx n m) 
+  (Γ : Ctx n m)
   (u : Term n.succ m)
   (T : CType n m) (U : CType n m) : Prop :=
   ∀ Ct' t' P,
@@ -230,11 +233,23 @@ theorem Typed.let_inv :
   intro h
   apply let_inv' <;> trivial
 
+inductive RSubtype : Ctx n m -> Fin n -> PType n m -> PType n m -> Prop where
+| trans :
+  RSubtype Γ x S1 S2 ->
+  RSubtype Γ x S2 S3 ->
+  RSubtype Γ x S1 S3
+| refine :
+  RefinePType S1 x Variance.cov S2 ->
+  RSubtype Γ x S1 S2
+| sub :
+  SubtypeP Γ R S ->
+  RSubtype Γ x R S
+
 theorem Typed.var_typing_bound' :
   t0 = Term.var x ->
   T0 = CType.capt C S ->
   Typed Γ t0 Cx T0 ->
-  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by
+  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ RSubtype Γ x S' S := by
   intro he1 he2 h
   induction h <;> try (solve | cases he1 | cases he2)
   case var hb =>
@@ -242,7 +257,17 @@ theorem Typed.var_typing_bound' :
     repeat (apply Exists.intro)
     apply And.intro
     exact hb
-    apply SubtypeP.refl
+    apply RSubtype.sub; apply SubtypeP.refl
+  case var_refine hr ih =>
+    cases he1; cases he2
+    have ih := ih rfl rfl
+    let ⟨C', S', hb, hsub⟩ := ih
+    repeat (apply Exists.intro)
+    apply And.intro
+    exact hb
+    apply RSubtype.trans
+    exact hsub
+    apply RSubtype.refine; trivial
   case sub T _ h hsub ih =>
     cases he1; cases he2
     cases T
@@ -252,11 +277,13 @@ theorem Typed.var_typing_bound' :
     apply And.intro
     exact hb
     cases hsub
-    apply SubtypeP.trans <;> trivial
+    apply RSubtype.trans
+    exact hsub0
+    apply RSubtype.sub; trivial
 
 theorem Typed.var_typing_bound :
   Typed Γ (Term.var x) Cx (CType.capt C S) ->
-  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ SubtypeP Γ S' S := by 
+  ∃ C' S', BoundVar Γ x (CType.capt C' S') ∧ RSubtype Γ x S' S := by
   apply Typed.var_typing_bound' <;> aesop
 
 theorem Typed.var_typing_captures'

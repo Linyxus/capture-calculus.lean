@@ -23,6 +23,10 @@ theorem Typed.precise_var' (h : Typed Γ t Cx T) :
   case var =>
     cases heq1; cases heq2
     constructor; trivial
+  case var_refine hr ih =>
+    cases heq1; cases heq2
+    apply var_refine <;> try trivial
+    apply ih <;> trivial
   case sub =>
     rename_i hsub ih
     subst_vars
@@ -45,7 +49,12 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     simp [Term.rename] at *
     apply Typed.precise_var' <;> try rfl
     exact h'
-  case sub hsub ih => 
+  case var_refine hr ih =>
+    apply Typed.var_refine
+    apply ih <;> trivial
+    simp [PType.rename]
+    apply RefinePType.rename; trivial
+  case sub hsub ih =>
     apply Typed.sub
     apply ih <;> trivial
     apply Subtype.subst hsub <;> aesop
@@ -93,7 +102,7 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     apply Typed.unbox
     simp [Term.rename] at ih'
     apply ih'
-  case letval1 ih1 ih2 => 
+  case letval1 ih1 ih2 =>
     simp [Term.rename]
     simp [CaptureSet.rename_union]
     apply Typed.letval1
