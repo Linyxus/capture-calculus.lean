@@ -45,6 +45,7 @@ def SubtypeP.tsubst'
     apply ih <;> trivial
   case cap =>
     unfold tsubst_motive_ctype at *; intros; simp [CType.tsubst]; constructor
+    apply Subcapt.tsubst <;> trivial
   case refl =>
     unfold tsubst_motive; intros
     apply SubtypeP.refl
@@ -97,10 +98,12 @@ def Subtype.tsubst
   (σ : VarTypeMap Γ Δ g)
   (δ : TVarSubst Γ Δ g) :
   Subtype Δ (T1.tsubst g) (T2.tsubst g) := by
-  cases h <;> try (solve | simp [CType.tsubst]; constructor)
-  constructor
-  apply Subcapt.tsubst <;> trivial
-  apply SubtypeP.tsubst <;> trivial
+  cases h
+  · constructor
+    apply Subcapt.tsubst <;> trivial
+    apply SubtypeP.tsubst <;> trivial
+  · constructor
+    apply Subcapt.tsubst <;> trivial
 
 def Subtype.narrow_tvar 
   (hsub : SubtypeP Γ T' T)
