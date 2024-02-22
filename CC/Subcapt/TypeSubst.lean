@@ -40,3 +40,7 @@ def Subcapt.tsubst
   case sc_reach_cap => apply Subcapt.sc_reach_cap
   case sc_elem_reach => apply Subcapt.sc_elem_reach; trivial
   case sc_elem_cap => apply Subcapt.sc_elem_cap
+  case sc_region hb =>
+    apply Subcapt.sc_region
+    have h := δ hb
+    trivial

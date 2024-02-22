@@ -28,7 +28,15 @@ def Subcapt.subst (σ : VarSubst Γ Δ f) :
     simp
     have h' := σ h
     simp [CType.rename] at h'
-    apply Typed.var_inv_subcapt; aesop
+    apply Typed.var_inv_subcapt
+    have h'' := h'.left
+    trivial
+  case sc_region hb =>
+    simp
+    have h' := σ hb
+    have h'' := h'.right
+    simp [Region.rename] at h''; cases h''
+    trivial
   case sc_set hs hr hu =>
     apply Subcapt.sc_set
     · intro x1 h1

@@ -19,14 +19,14 @@ def SubtypeP.subst (σ : VarSubst Γ Δ f) (δ : TVarRename Γ Δ f id) :
   SubtypeP Δ (T1.rename f id) (T2.rename f id) := by
   intro h
   apply SubtypeP.rec
-        (motive_1 := 
-          fun Γ T1 T2 _ => 
+        (motive_1 :=
+          fun Γ T1 T2 _ =>
             ∀ {n2} {Δ : Ctx n2 _} {f} {_ : VarSubst Γ Δ f} {_ : TVarRename Γ Δ f id}, Subtype Δ (T1.rename f id) (T2.rename f id))
-        (motive_2 := 
+        (motive_2 :=
           fun Γ S1 S2 _ =>
             ∀ {n2} {Δ : Ctx n2 _} {f} {_ : VarSubst Γ Δ f} {_ : TVarRename Γ Δ f id}, SubtypeP Δ (S1.rename f id) (S2.rename f id))
     <;> try assumption
-  case capt => 
+  case capt =>
     intros
     simp [CType.rename]
     apply Subtype.capt
@@ -77,8 +77,8 @@ def Subtype.subst (h : Subtype Γ T1 T2) (σ : VarSubst Γ Δ f) (δ : TVarRenam
   apply SubtypeP.subst <;> aesop
 
 def Subtype.narrow_var (hsub : Subtype Γ T1 T2)
-  (h0 : Subtype (Ctx.extend_var Γ T2) U1 U2) :
-  Subtype (Ctx.extend_var Γ T1) U1 U2 := by
+  (h0 : Subtype (Ctx.extend_var Γ T2 r) U1 U2) :
+  Subtype (Ctx.extend_var Γ T1 r) U1 U2 := by
   have h := Subtype.subst h0 (VarSubst.narrowing_var hsub) TVarRename.narrowing_var
   rw [<- CType.rename_id (T := U1)]
   rw [<- CType.rename_id (T := U2)]

@@ -53,3 +53,7 @@ def Subcapt.rename (σ : VarRename Γ Δ f g) : Subcapt Γ C1 C2 -> Subcapt Δ (
     simp; aesop
   case sc_reach_cap =>
     simp; apply Subcapt.sc_reach_cap
+  case sc_region h =>
+    simp; apply Subcapt.sc_region
+    have H := σ h
+    trivial

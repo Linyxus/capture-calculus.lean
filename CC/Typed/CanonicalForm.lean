@@ -19,7 +19,7 @@ theorem Typed.cf_fun' :
   t0 = Term.abs T' t ->
   T0 = CType.capt C (PType.arr T U) ->
   Typed Γ t0 Ct T0 ->
-  ∃ C', Typed (Ctx.extend_var Γ T) t C' U := by
+  ∃ C', Typed (Ctx.extend_var Γ T Region.glob) t C' U := by
   intro he1 he2 h
   induction h <;> try (solve | cases he1 | cases he2)
   case abs h hd ih =>
@@ -47,7 +47,7 @@ theorem Typed.cf_fun' :
 
 theorem Typed.cf_fun :
   Typed Γ (Term.abs T' t) Ct (CType.capt C (PType.arr T U)) ->
-  ∃ C', Typed (Ctx.extend_var Γ T) t C' U := by
+  ∃ C', Typed (Ctx.extend_var Γ T Region.glob) t C' U := by
   intro h
   apply Typed.cf_fun' <;> trivial
 

@@ -5,28 +5,28 @@ import CC.Context
 namespace CC
 
 def VarRename (Γ : Ctx n1 m1) (Δ : Ctx n2 m2) (f : VarMap n1 n2) (g : VarMap m1 m2) : Prop :=
-  ∀ {x T}, BoundVar Γ x T -> BoundVar Δ (f x) (T.rename f g)
+  ∀ {x T r}, BoundVar Γ x T r -> BoundVar Δ (f x) (T.rename f g) (r.rename f)
 
 def TVarRename (Γ : Ctx n1 m1) (Δ : Ctx n2 m2) (f : VarMap n1 n2) (g : VarMap m1 m2) : Prop :=
   ∀ {X S}, BoundTVar Γ X S -> BoundTVar Δ (g X) (S.rename f g)
 
 def VarRename.weaken_var_map (Γ : Ctx n m) (T : CType n m) :
-  VarRename Γ (Ctx.extend_var Γ T) weaken_map id := by
-  intro x P h
+  VarRename Γ (Ctx.extend_var Γ T r) weaken_map id := by
+  intro x P r h
   apply BoundVar.there_var
   trivial
 
 def TVarRename.weaken_var_map (Γ : Ctx n m) (T : CType n m) :
-  TVarRename Γ (Ctx.extend_var Γ T) weaken_map id := by
+  TVarRename Γ (Ctx.extend_var Γ T r) weaken_map id := by
   intro X P h
   apply BoundTVar.there_var
   trivial
 
 def VarRename.weaken_tvar_map (Γ : Ctx n m) (S : PType n m) :
   VarRename Γ (Ctx.extend_tvar Γ S) id weaken_map := by
-  intro x P h
+  intro x P r h
   apply BoundVar.there_tvar
-  trivial
+  simp; trivial
 
 def TVarRename.weaken_tvar_map (Γ : Ctx n m) (S : PType n m) :
   TVarRename Γ (Ctx.extend_tvar Γ S) id weaken_map := by
@@ -54,8 +54,13 @@ theorem CType.rename_weaken_tvar_comp (T : CType n m) :
   simp [weaken_tvar]
   simp [CType.rename_comp]
 
-theorem CType.rename_open_comp 
-  {n m : Nat} (T : CType n.succ m) 
+theorem Region.rename_weaken_var_comp (r : Region n) :
+  r.weaken_var.rename f = r.rename (f.comp weaken_map) := by
+  simp [weaken_var]
+  simp [Region.rename_comp]
+
+theorem CType.rename_open_comp
+  {n m : Nat} (T : CType n.succ m)
   {x : Fin n} {f : VarMap n n'} {g : VarMap m m'} :
   (T.open_var x).rename f g = T.rename (f.comp (open_map x)) g := by
   simp [open_var]
@@ -94,6 +99,11 @@ theorem CType.weaken_tvar_rename_comp (T : CType n m) :
   simp [weaken_tvar]
   simp [CType.rename_comp]
 
+theorem Region.weaken_var_rename_comp (r : Region n) :
+  (r.rename f).weaken_var = r.rename (weaken_map.comp f) := by
+  simp [weaken_var]
+  simp [Region.rename_comp]
+
 theorem PType.weaken_tvar_rename_comp (S : PType n m) :
   (S.rename f g).weaken_tvar = S.rename f (weaken_map.comp g) := by
   simp [weaken_tvar]
@@ -114,6 +124,11 @@ theorem PType.rename_weaken_comm (S : PType n m) :
   simp [PType.rename_weaken_var_comp]
   rw [<- PType.weaken_var_rename_comp]
 
+lemma Region.rename_weaken_comm (r : Region n) :
+  (r.rename f).weaken_var = r.weaken_var.rename f.ext := by
+  simp [Region.rename_weaken_var_comp]
+  rw [<- Region.weaken_var_rename_comp]
+
 theorem PType.rename_weaken_tvar_comm (S : PType n m) :
   (S.rename f g).weaken_tvar = S.weaken_tvar.rename f g.ext := by
   simp [PType.rename_weaken_tvar_comp]
@@ -129,19 +144,23 @@ theorem CaptureSet.rename_weaken_comm (C : CaptureSet n) :
   simp [CaptureSet.rename_weaken_var_comp]
   rw [<- CaptureSet.weaken_var_rename_comp]
 
-def VarRename.ext_var {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} 
+def VarRename.ext_var {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
   (σ : VarRename Γ Δ f g) (T : CType n1 m1) :
-  VarRename (Ctx.extend_var Γ T) (Ctx.extend_var Δ (T.rename f g)) f.ext g := by
-  intro x P h
+  VarRename (Ctx.extend_var Γ T r) (Ctx.extend_var Δ (T.rename f g) (r.rename f)) f.ext g := by
+  intro x P p h
   cases h with
   | here =>
     simp [CType.rename_weaken_var_comp]
     rw [<- CType.weaken_var_rename_comp]
+    simp [Region.rename_weaken_var_comp]
+    rw [<- Region.weaken_var_rename_comp]
     simp [VarMap.ext]
     constructor
   | there_var h =>
     simp [CType.rename_weaken_var_comp]
     rw [<- CType.weaken_var_rename_comp]
+    simp [Region.rename_weaken_var_comp]
+    rw [<- Region.weaken_var_rename_comp]
     simp [VarMap.ext]
     constructor
     aesop
@@ -149,7 +168,7 @@ def VarRename.ext_var {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
 def VarRename.ext_tvar {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
   (σ : VarRename Γ Δ f g) (R : PType n1 m1) :
   VarRename (Ctx.extend_tvar Γ R) (Ctx.extend_tvar Δ (R.rename f g)) f g.ext := by
-  intro x P h
+  intro x P p h
   cases h with
   | there_tvar h =>
     simp [CType.rename_weaken_tvar_comp]
@@ -158,7 +177,7 @@ def VarRename.ext_tvar {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
 
 def TVarRename.ext_var {Γ : Ctx n1 m1} {Δ : Ctx n2 m2}
   (δ : TVarRename Γ Δ f g) (T : CType n1 m1) :
-  TVarRename (Ctx.extend_var Γ T) (Ctx.extend_var Δ (T.rename f g)) f.ext g := by
+  TVarRename (Ctx.extend_var Γ T r) (Ctx.extend_var Δ (T.rename f g) (r.rename f)) f.ext g := by
   intro X R h
   cases h with
   | there_var h =>
@@ -203,9 +222,14 @@ lemma PType.weaken_var1_weaken_var (S : PType n m) :
   unfold weaken_var1; unfold weaken_var
   simp [PType.rename_comp]
 
+lemma Region.weaken_var1_weaken_var (r : Region n) :
+  r.weaken_var.weaken_var1 = r.weaken_var.weaken_var := by
+  unfold weaken_var1; unfold weaken_var
+  simp [Region.rename_comp]
+
 def VarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
-  VarRename (Ctx.extend_var Γ T) (Ctx.extend_var (Ctx.extend_var Γ P) T.weaken_var) weaken_map.ext id := by
-  intro x Q h
+  VarRename (Ctx.extend_var Γ T r) (Ctx.extend_var (Ctx.extend_var Γ P p) T.weaken_var r.weaken_var) weaken_map.ext id := by
+  intro x Q q h
   cases h with
   | here =>
     conv =>
@@ -213,6 +237,8 @@ def VarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
       simp [VarMap.ext]
     rw [<- CType.weaken_var1_def]
     rw [CType.weaken_var1_weaken_var]
+    rw [<- Region.weaken_var1_def]
+    rw [Region.weaken_var1_weaken_var]
     constructor
   | there_var h0 =>
     conv =>
@@ -220,12 +246,14 @@ def VarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
       simp [VarMap.ext, weaken_map]
     rw [<- CType.weaken_var1_def]
     rw [CType.weaken_var1_weaken_var]
+    rw [<- Region.weaken_var1_def]
+    rw [Region.weaken_var1_weaken_var]
     constructor
     constructor
     trivial
 
 def TVarRename.weaken_var1_map (Γ : Ctx n m) (T : CType n m) (P : CType n m) :
-  TVarRename (Ctx.extend_var Γ T) (Ctx.extend_var (Ctx.extend_var Γ P) T.weaken_var) weaken_map.ext id := by
+  TVarRename (Ctx.extend_var Γ T r) (Ctx.extend_var (Ctx.extend_var Γ P r') T.weaken_var r.weaken_var) weaken_map.ext id := by
   intro X S h
   cases h with
   | there_var h =>

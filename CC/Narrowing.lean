@@ -21,28 +21,41 @@ namespace CC
 
 def VarSubst.narrowing_var
   (h : Subtype Γ T' T) :
-  VarSubst (Ctx.extend_var Γ T) (Ctx.extend_var Γ T') id := by
+  VarSubst (Ctx.extend_var Γ T r) (Ctx.extend_var Γ T' r) id := by
   unfold VarSubst
-  intro x P hb
+  intro x P p hb
   cases x using Fin.cases with
   | H0 =>
-    simp
-    cases hb
-    apply Typed.sub
-    apply Typed.var_bound_type
-    constructor
-    apply Subtype.weaken_var
-    trivial
+    apply And.intro
+    case left =>
+      simp
+      cases hb
+      apply Typed.sub
+      apply Typed.var_bound_type
+      constructor
+      apply Subtype.weaken_var
+      trivial
+    case right =>
+      simp
+      cases hb
+      apply SubcaptR.from_bound_var; constructor
   | Hs x0 =>
-    simp
-    let ⟨P0, he, hb0⟩ := BoundVar.pred hb
-    subst_vars
-    apply Typed.var_bound_type
-    constructor
-    trivial
+    apply And.intro
+    case left =>
+      simp
+      let ⟨P0, r0, he1, he2, hb0⟩ := BoundVar.pred hb
+      subst_vars
+      apply Typed.var_bound_type
+      constructor
+      trivial
+    case right =>
+      simp
+      let ⟨P0, r0, he1, he2, hb0⟩ := BoundVar.pred hb
+      subst_vars
+      apply SubcaptR.from_bound_var; constructor; trivial
 
 def TVarRename.narrowing_var :
-  TVarRename (Ctx.extend_var Γ T) (Ctx.extend_var Γ T') id id := by
+  TVarRename (Ctx.extend_var Γ T p) (Ctx.extend_var Γ T' p) id id := by
   unfold TVarRename
   intros X S h
   simp
@@ -53,7 +66,7 @@ def TVarRename.narrowing_var :
 def VarTypeMap.narrowing_tvar :
   VarTypeMap (Ctx.extend_tvar Γ T) (Ctx.extend_tvar Γ T') TypeMap.id := by
   unfold VarTypeMap
-  intros x T h
+  intros x T r h
   cases h
   simp [CType.tsubst_id]
   constructor; trivial

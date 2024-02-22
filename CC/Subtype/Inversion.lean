@@ -18,7 +18,7 @@ import CC.Subtype.TypeSubst
 namespace CC
 
 def SubtypeP.tvar_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ X, 
+  ∀ X,
     S2 = PType.tvar X ->
     SubtypeP Γ S1 S2 ->
     ∃ Y, S1 = PType.tvar Y
@@ -44,7 +44,7 @@ def SubtypeP.tvar_inv' :
     cases ih2'
     subst_vars
     apply ih1 <;> trivial
-  case tvar => 
+  case tvar =>
     intros; unfold tvar_inv_motive at *
     aesop
 
@@ -55,11 +55,11 @@ lemma SubtypeP.tvar_inv :
   apply SubtypeP.tvar_inv' <;> trivial
 
 private def SubtypeP.fun_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ T U, 
+  ∀ T U,
     S2 = PType.arr T U ->
     SubtypeP Γ S1 S2 ->
-    (∃ X, S1 = PType.tvar X) ∨ 
-    (∃ T' U', S1 = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U)
+    (∃ X, S1 = PType.tvar X) ∨
+    (∃ T' U', S1 = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T Region.glob) U' U)
 
 lemma SubtypeP.fun_inv' :
   SubtypeP Γ S1 S2 ->
@@ -133,19 +133,19 @@ lemma SubtypeP.fun_inv' :
 
 theorem SubtypeP.fun_inv :
   SubtypeP Γ P (PType.arr T U) ->
-  (∃ X, P = PType.tvar X) ∨ 
-  (∃ T' U', P = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T) U' U) := by
+  (∃ X, P = PType.tvar X) ∨
+  (∃ T' U', P = PType.arr T' U' ∧ Subtype Γ T T' ∧ Subtype (Ctx.extend_var Γ T Region.glob) U' U) := by
   intros
   apply SubtypeP.fun_inv' <;> aesop
 
 private def SubtypeP.tfun_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ T U, 
+  ∀ T U,
     S2 = PType.tarr T U ->
     SubtypeP Γ S1 S2 ->
-    (∃ X, S1 = PType.tvar X) ∨ 
+    (∃ X, S1 = PType.tvar X) ∨
     (∃ T' U', S1 = PType.tarr T' U' ∧ SubtypeP Γ T T' ∧ Subtype (Ctx.extend_tvar Γ T) U' U)
 
-lemma SubtypeP.tfun_inv' 
+lemma SubtypeP.tfun_inv'
   (h : SubtypeP Γ S1 S2) :
   SubtypeP.tfun_inv_motive Γ S1 S2 := by
   apply SubtypeP.rec
@@ -212,16 +212,16 @@ lemma SubtypeP.tfun_inv'
 
 lemma SubtypeP.tfun_inv :
   SubtypeP Γ P (PType.tarr T U) ->
-  (∃ X, P = PType.tvar X) ∨ 
+  (∃ X, P = PType.tvar X) ∨
   (∃ T' U', P = PType.tarr T' U' ∧ SubtypeP Γ T T' ∧ Subtype (Ctx.extend_tvar Γ T) U' U) := by
   intro h
   apply SubtypeP.tfun_inv' <;> aesop
 
 private def SubtypeP.boxed_inv_motive (Γ : Ctx n m) (S1 S2 : PType n m) : Prop :=
-  ∀ T, 
+  ∀ T,
     S2 = PType.boxed T ->
     SubtypeP Γ S1 S2 ->
-    (∃ X, S1 = PType.tvar X) ∨ 
+    (∃ X, S1 = PType.tvar X) ∨
     (∃ T', S1 = PType.boxed T' ∧ Subtype Γ T' T)
 
 lemma SubtypeP.boxed_inv'
@@ -284,7 +284,7 @@ lemma SubtypeP.boxed_inv'
 
 lemma SubtypeP.boxed_inv :
   SubtypeP Γ P (PType.boxed T) ->
-  (∃ X, P = PType.tvar X) ∨ 
+  (∃ X, P = PType.tvar X) ∨
   (∃ T', P = PType.boxed T' ∧ Subtype Γ T' T) := by
   intro h
   apply SubtypeP.boxed_inv' <;> aesop

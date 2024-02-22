@@ -81,3 +81,6 @@ theorem comp_open (f : VarMap n1 n2) (x : Fin n1) :
 @[simp]
 theorem ext_zero (f : VarMap n1 n2) :
   f.ext 0 = 0 := by simp [VarMap.ext]
+
+theorem ext_succ (f : VarMap n1 n2) (x : Fin n1) :
+  f.ext x.succ = (f x).succ := by simp [VarMap.ext]

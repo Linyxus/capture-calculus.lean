@@ -21,9 +21,9 @@ theorem lookup_fun
   (hs : TypedStore γ Γ)
   (hx : Typed Γ (Term.var x) Cx (CType.capt Cf (PType.arr T U)))
   (hl : LookupStore γ x ⟨Term.abs T' t, hval⟩) :
-  ∃ C0, Typed (Ctx.extend_var Γ T) t C0 U := by
+  ∃ C0, Typed (Ctx.extend_var Γ T Region.glob) t C0 U := by
   have h1 := Typed.var_typing_bound hx
-  let ⟨C1, S1, hb, hsub⟩ := h1
+  let ⟨C1, S1, r1, hb, hsub⟩ := h1
   have h2 := lookup_store_typing hs hb hl
   let ⟨C2, ht⟩ := h2
   simp at ht

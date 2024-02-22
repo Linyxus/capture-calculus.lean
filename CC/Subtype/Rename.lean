@@ -13,17 +13,17 @@ import CC.Subtype
 
 namespace CC
 
-def SubtypeP.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : PType n1 m1} 
+def SubtypeP.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : PType n1 m1}
   (h : SubtypeP Γ T1 T2)
   {f : VarMap n1 n2} {g : VarMap m1 m2}
   (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) :
   SubtypeP Δ (T1.rename f g) (T2.rename f g) := by
   apply SubtypeP.rec
-        (motive_1 := 
-          fun Γ T1 T2 _ => 
+        (motive_1 :=
+          fun Γ T1 T2 _ =>
             ∀ {n2 m2} {Δ : Ctx n2 m2} {f g} (_ : VarRename Γ Δ f g) (_ : TVarRename Γ Δ f g), Subtype Δ (T1.rename f g) (T2.rename f g))
         (motive_2 :=
-          fun Γ T1 T2 _ => 
+          fun Γ T1 T2 _ =>
             ∀ {n2 m2} {Δ : Ctx n2 m2} {f g} (_ : VarRename Γ Δ f g) (_ : TVarRename Γ Δ f g), SubtypeP Δ (T1.rename f g) (T2.rename f g))
     <;> try assumption
   case capt =>
@@ -68,8 +68,8 @@ def SubtypeP.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : PType n1 m1}
     simp
     apply SubtypeP.boxed
     aesop
-  
-def Subtype.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : CType n1 m1} 
+
+def Subtype.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : CType n1 m1}
   (h : Subtype Γ T1 T2)
   {f : VarMap n1 n2} {g : VarMap m1 m2}
   (σ : VarRename Γ Δ f g) (δ : TVarRename Γ Δ f g) :
@@ -81,11 +81,11 @@ def Subtype.rename {Γ : Ctx n1 m1} {Δ : Ctx n2 m2} {T1 T2 : CType n1 m1}
   apply SubtypeP.rename <;> aesop
 
 def Subtype.weaken_var (h : Subtype Γ T1 T2) P :
-  Subtype (Ctx.extend_var Γ P) T1.weaken_var T2.weaken_var :=
+  Subtype (Ctx.extend_var Γ P p) T1.weaken_var T2.weaken_var :=
   h.rename (VarRename.weaken_var_map Γ P) (TVarRename.weaken_var_map Γ P)
 
 def SubtypeP.weaken_var (h : SubtypeP Γ T1 T2) P :
-  SubtypeP (Ctx.extend_var Γ P) T1.weaken_var T2.weaken_var :=
+  SubtypeP (Ctx.extend_var Γ P p) T1.weaken_var T2.weaken_var :=
   h.rename (VarRename.weaken_var_map Γ P) (TVarRename.weaken_var_map Γ P)
 
 def SubtypeP.weaken_tvar (h : SubtypeP Γ T1 T2) P :

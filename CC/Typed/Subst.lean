@@ -48,7 +48,7 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
     have h' := σ hb
     simp [Term.rename] at *
     apply Typed.precise_var' <;> try rfl
-    exact h'
+    exact h'.left
   case var_refine hr ih =>
     apply Typed.var_refine
     apply ih <;> trivial
@@ -128,16 +128,17 @@ def Typed.subst {Γ : Ctx n1 m} (h : Typed Γ t C T)
 
 def Typed.narrow_var
   (hsub : Subtype Γ T1 T2)
-  (h0 : Typed (Ctx.extend_var Γ T2) t Ct T) :
-  Typed (Ctx.extend_var Γ T1) t Ct T := by
+  (h0 : Typed (Ctx.extend_var Γ T2 r) t Ct T) :
+  Typed (Ctx.extend_var Γ T1 r) t Ct T := by
   have h := Typed.subst h0 (VarSubst.narrowing_var hsub) TVarRename.narrowing_var
   rw [<- Term.rename_id (t := t), <- CaptureSet.rename_id (C := Ct), <- CType.rename_id (T := T)]
   assumption
 
 def Typed.open_var
   (hz : Typed Γ (Term.var z) {z} P)
-  (h0 : Typed (Ctx.extend_var Γ P) t C T) :
+  (h0 : Typed (Ctx.extend_var Γ P Region.glob) t C T) :
   Typed Γ (t.open_var z) (C.open_var z) (T.open_var z) := by
   apply Typed.subst <;> try trivial
   apply VarSubst.open_var; trivial
+  constructor
   apply TVarRename.open_var; trivial
