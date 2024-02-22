@@ -31,7 +31,7 @@ inductive SubtypeP : Ctx n m -> PType n m -> PType n m -> Prop where
   SubtypeP Γ (PType.tvar X) S
 | arr :
   Subtype Γ T2 T1 ->
-  Subtype (Ctx.extend_var Γ T2) U1 U2 ->
+  Subtype (Ctx.extend_var Γ T2 Region.glob) U1 U2 ->
   SubtypeP Γ (PType.arr T1 U1) (PType.arr T2 U2)
 | tarr :
   SubtypeP Γ S2 S1 ->
