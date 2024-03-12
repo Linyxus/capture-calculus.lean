@@ -2,7 +2,7 @@
 
 Currently it contains the mechanization of both System F<: and System CC<:box.
 
-- `fsub/`, the System F<: type soundness proof. Intrinsically typed and de Bruijn indexed.
+- `FSub/`, the System F<: type soundness proof. Intrinsically typed and de Bruijn indexed.
 - `CC/`, the proof for System CC<:box. It is de Bruijn indexed and extrinsically typed.
   Main type soundness results (progress and preservation) are in `CC/Reduction/Safety.lean`.
   
