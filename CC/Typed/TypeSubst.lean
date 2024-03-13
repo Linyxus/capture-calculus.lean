@@ -66,27 +66,19 @@ def Typed.tsubst {Δ : Ctx n m2}
     simp [Term.tsubst] at *
     apply Typed.unbox
     apply ih <;> trivial
-  case letval1 ih1 ih2 =>
+  case letval ih1 ih2 =>
     simp [Term.tsubst] at *
-    apply Typed.letval1
+    apply Typed.letval
     apply ih1 <;> trivial
     apply ih2 <;> try trivial
     apply VarTypeMap.ext_var; trivial
     apply TVarSubst.ext_var; trivial
     subst_vars
     simp [CType.tsubst_weaken_var_comm]
-    trivial
-  case letval2 ih1 ih2 =>
-    simp [Term.tsubst] at *
-    apply Typed.letval2
-    apply ih1 <;> trivial
-    apply Value.tsubst; trivial
-    apply ih2
-    apply VarTypeMap.ext_var; trivial
-    apply TVarSubst.ext_var; trivial
-    subst_vars
-    simp [CType.tsubst_weaken_var_comm]
-    trivial
+    rename_i hc
+    cases hc with
+    | normal => constructor; trivial
+    | gc => apply LetC.gc; trivial; apply Value.tsubst; trivial
 
 def Typed.narrow_tvar
   (hsub : SubtypeP Γ T2 T1)

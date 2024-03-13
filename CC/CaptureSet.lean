@@ -9,8 +9,9 @@ structure CaptureSet (n : Nat) where
   rdr : Bool
   cap : Bool
 
-structure SepDegree (n : Nat) where
-  elems : Finset (Fin n)
+inductive SepDegree (n : Nat) where
+| elems : Finset (Fin n) -> SepDegree n
+| uniq : SepDegree n
 
 def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
   { elems := {}, rdr := C.rdr, cap := false }
@@ -18,10 +19,23 @@ def CaptureSet.rdrSet (C : CaptureSet n) : CaptureSet n :=
 def CaptureSet.capSet (C : CaptureSet n) : CaptureSet n :=
   { elems := {}, rdr := false, cap := C.cap }
 
-def singletonRdr : CaptureSet n :=
+def CaptureSet.hasRdr (C : CaptureSet n) : Prop :=
+  C.rdr = true
+
+def CaptureSet.hasCap (C : CaptureSet n) : Prop :=
+  C.cap = true
+
+def SepDegree.isUniq (D : SepDegree n) : Prop :=
+  match D with
+  | SepDegree.elems _ => false
+  | SepDegree.uniq => true
+
+@[simp]
+def rdr : CaptureSet n :=
   { elems := {}, rdr := true, cap := false }
 
-def singletonCap : CaptureSet n :=
+@[simp]
+def cap : CaptureSet n :=
   { elems := {}, rdr := false, cap := true }
 
 instance : Membership (Fin n) (CaptureSet n) :=
@@ -36,23 +50,33 @@ instance : Union (CaptureSet n) :=
 instance : EmptyCollection (CaptureSet n) :=
   ⟨⟨{}, false, false⟩⟩
 
+def SepDegree.mem (a : Fin n) (D : SepDegree n) :=
+  match D with
+  | SepDegree.elems xs => a ∈ xs
+  | SepDegree.uniq => False
+
 instance : Membership (Fin n) (SepDegree n) :=
-  ⟨fun a s => a ∈ s.1⟩
+  ⟨fun a s => s.mem a⟩
+
+def SepDegree.singleton (x : Fin n) : SepDegree n :=
+  SepDegree.elems {x}
 
 instance : Singleton (Fin n) (SepDegree n) :=
-  ⟨fun x => ⟨{x}⟩⟩
+  ⟨fun x => SepDegree.singleton x⟩
 
-instance : Union (SepDegree n) :=
-  ⟨fun s t => ⟨s.1 ∪ t.1⟩⟩
+-- instance : Union (SepDegree n) :=
+--   ⟨fun s t => ⟨s.1 ∪ t.1, s.2 || t.2⟩⟩
 
 instance : EmptyCollection (SepDegree n) :=
-  ⟨⟨{}⟩⟩
+  ⟨SepDegree.elems {}⟩
 
 def CaptureSet.rename (C : CaptureSet n1) (f : VarMap n1 n2) : CaptureSet n2 :=
   ⟨C.elems.image f, C.rdr, C.cap⟩
 
 def SepDegree.rename (C : SepDegree n1) (f : VarMap n1 n2) : SepDegree n2 :=
-  ⟨C.elems.image f⟩
+  match C with
+  | SepDegree.elems xs => SepDegree.elems (xs.image f)
+  | SepDegree.uniq => SepDegree.uniq
   
 def CaptureSet.weaken_var (C : CaptureSet n) : CaptureSet n.succ :=
   C.rename weaken_map
@@ -83,6 +107,8 @@ theorem SepDegree.rename_empty :
 
 theorem mem_def {x : Fin n} {C : CaptureSet n} : x ∈ C ↔ x ∈ C.1 := Iff.rfl
 
+theorem singleton_def {x : Fin n} : ({x} : CaptureSet n).elems = {x} := rfl
+
 theorem mem_rename_of_mem (f : VarMap n1 n2) {C : CaptureSet n1} (h : x ∈ C) : f x ∈ C.rename f := by
   unfold CaptureSet.rename
   simp [mem_def]
@@ -110,7 +136,7 @@ theorem CaptureSet.rename_id : ∀ {C : CaptureSet n},
 theorem SepDegree.rename_id : ∀ {D : SepDegree n},
   D.rename id = D := by
   introv
-  simp [SepDegree.rename]
+  cases D <;> simp [SepDegree.rename]
 
 @[simp]
 theorem CaptureSet.rename_id' : ∀ {C : CaptureSet n},
@@ -126,7 +152,7 @@ theorem CaptureSet.rename_comp {C : CaptureSet n1} {f1 : VarMap n1 n2} {f2 : Var
 theorem SepDegree.rename_comp {D : SepDegree n1} {f1 : VarMap n1 n2} {f2 : VarMap n2 n3} :
   (D.rename f1).rename f2 = D.rename (f2.comp f1) := by
   unfold VarMap.comp
-  simp [SepDegree.rename, Finset.image_image]
+  cases D <;> simp [SepDegree.rename, Finset.image_image]
 
 theorem CaptureSet.rename_union {C1 C2 : CaptureSet n} :
   (C1 ∪ C2).rename f = C1.rename f ∪ C2.rename f := by
@@ -144,6 +170,18 @@ lemma CaptureSet.val_eq {C1 C2 : CaptureSet n}
 
 lemma CaptureSet.val_def :
   ({ elems := xs, rdr := b1, cap := b2 } : CaptureSet n).elems = xs := rfl
+
+lemma CaptureSet.elems_val_eq {C1 C2 : CaptureSet n}
+  (he : C1 = C2) :
+  C1.elems = C2.elems := by aesop
+
+lemma CaptureSet.cap_val_eq {C1 C2 : CaptureSet n}
+  (he : C1 = C2) :
+  C1.cap = C2.cap := by aesop
+
+@[simp]
+lemma CaptureSet.cap_val_def :
+  ({ elems := xs, rdr := b1, cap := b2 } : CaptureSet n).cap = b2 := rfl
 
 lemma CaptureSet.in_union_elems {C1 C2 : CaptureSet n}
   (h : x ∈ (C1 ∪ C2).elems) :
@@ -166,3 +204,61 @@ lemma SepDegree.empty_weaken_var1 :
 
 lemma SepDegree.empty_weaken_var :
   ({} : SepDegree n).weaken_var = {} := by simp [weaken_var]
+
+@[simp]
+lemma CaptureSet.rdrSet_rdrSet (C : CaptureSet n) :
+  C.rdrSet.rdrSet = C.rdrSet := by
+  cases C; simp [CaptureSet.rdrSet]
+
+@[simp]
+lemma CaptureSet.mem_singleton
+  {x : Fin n} :
+  x ∈ ({y} : CaptureSet n) ↔ x = y := by
+  simp [mem_def] at *
+  simp [singleton_def] at *
+
+lemma CaptureSet.singleton_def' (x : Fin n) :
+  ({x} : CaptureSet n) = { elems := {x}, rdr := false, cap := false } := by
+  rfl
+
+lemma CaptureSet.empty_def :
+  (∅ : CaptureSet n) = { elems := ∅, rdr := false, cap := false } := by
+  rfl
+
+@[simp]
+lemma CaptureSet.singleton_rdrSet (x : Fin n) :
+  ({x} : CaptureSet n).rdrSet = ∅ := by
+  rw [CaptureSet.singleton_def', rdrSet]
+  simp [empty_def]
+
+@[simp]
+lemma CaptureSet.empty_rdrSet :
+  ({} : CaptureSet n).rdrSet = ∅ := by
+  simp [empty_def, rdrSet]
+
+@[simp]
+lemma CaptureSet.empty_capSet :
+  ({} : CaptureSet n).capSet = ∅ := by
+  simp [empty_def, capSet]
+
+lemma CaptureSet.singleton_eq_empty_absurd :
+  ({x} : CaptureSet n) = { elems := {}, rdr := b1, cap := b2 } → False := by
+  rw [singleton_def']
+  intros he
+  have he1 := CaptureSet.elems_val_eq he
+  rw [val_def] at he1; simp [val_def] at he1
+
+-- def SepDegree.as_cset (D : SepDegree n) : CaptureSet n := 
+--   { elems := D.elems, rdr := false, cap := false }
+
+lemma CaptureSet.singleton_hasRdr_absurd {x : Fin n} :
+  ({x} : CaptureSet n).hasRdr → False := by simp [CaptureSet.hasRdr]
+
+lemma CaptureSet.singleton_hasCap_absurd {x : Fin n} :
+  ({x} : CaptureSet n).hasCap → False := by simp [CaptureSet.hasCap]
+
+lemma cap_hasCap :
+  (cap : CaptureSet n).hasCap := by simp [CaptureSet.hasCap]
+
+lemma rdr_hasRdr :
+  (rdr : CaptureSet n).hasRdr := by simp [CaptureSet.hasRdr]

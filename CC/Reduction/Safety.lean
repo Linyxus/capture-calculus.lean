@@ -203,7 +203,7 @@ theorem progress
     repeat apply Exists.intro
     constructor
     apply Reduce.red_open; trivial
-  case letval1 ih1 _ =>
+  case letval ih1 _ =>
     have hz := TypedStore.no_tvar hst; subst_vars
     have ih := ih1 hst
     cases ih with
@@ -230,9 +230,3 @@ theorem progress
         apply Or.inr; repeat apply Exists.intro
         constructor
         apply Reduce.red_ctx2; trivial
-  case letval2 hv _ _ _ _ _ =>
-    have hz := TypedStore.no_tvar hst; subst_vars
-    apply Or.inr
-    repeat apply Exists.intro
-    constructor
-    apply Reduce.red_liftval; trivial
